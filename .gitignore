@@ -2,5 +2,5 @@ node_modules
 
 tmp
 src/modules/player/tmp
-./*.pyc
-./hommyPi_raspberryApp.egg-info
+src/python/*.pyc
+*.egg-info*

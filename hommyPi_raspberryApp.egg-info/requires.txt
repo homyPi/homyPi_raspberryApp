@@ -1,7 +1,0 @@
-rabbitpy
-pyspotify
-pyalsaaudio
-python-dateutil
-apscheduler
-requests
-setproctitle

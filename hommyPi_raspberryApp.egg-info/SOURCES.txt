@@ -1,7 +1,0 @@
-setup.py
-hommyPi_raspberryApp.egg-info/PKG-INFO
-hommyPi_raspberryApp.egg-info/SOURCES.txt
-hommyPi_raspberryApp.egg-info/dependency_links.txt
-hommyPi_raspberryApp.egg-info/not-zip-safe
-hommyPi_raspberryApp.egg-info/requires.txt
-hommyPi_raspberryApp.egg-info/top_level.txt
