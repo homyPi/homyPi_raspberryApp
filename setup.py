@@ -7,14 +7,14 @@ setup(name='hommyPi_raspberryApp',
       author='Youenn PENNARUN',
       author_email='',
       license='MIT',
-      packages=[''],
+      packages=[],
       install_requires=[
           'rabbitpy',
           'pyspotify',
           'pyalsaaudio',
           'python-dateutil',
           'apscheduler',
-          'request',
+          'requests',
           'setproctitle'
           ],
       zip_safe=False)

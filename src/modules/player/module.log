@@ -8454,3 +8454,161 @@ TypeError: stopApp() takes exactly 1 argument (3 given)
 
 INFO       2015-10-05 16:21:15,157 spotify.session                logged_out                           933 : Spotify logged out
 INFO       2015-10-05 16:21:16,062 apscheduler.scheduler          remove_job                           513 : Removed job c644ee5588a64a479ec0ef907ac60c56
+INFO       2015-10-05 23:54:20,185 requests.packages.urllib3.connectionpool _new_conn                            203 : Starting new HTTP connection (1): homypi.herokuapp.com
+INFO       2015-10-05 23:54:20,665 __main__                       __init__                             40  : starting player module
+INFO       2015-10-05 23:54:21,396 rabbitConnection               connected                            110 : Sending connected callbacks
+INFO       2015-10-05 23:54:22,126 spotify_player                 __init__                             43  : Initializing player
+INFO       2015-10-05 23:54:25,249 spotify.session                logged_in                            919 : Spotify logged in
+INFO       2015-10-05 23:54:25,283 spotify_player                 __init__                             66  : Ready
+INFO       2015-10-05 23:54:25,286 __main__                       setHandlers                          198 : set handlers
+INFO       2015-10-05 23:54:25,288 rabbitConnection               addHandler                           107 : adding handler for playTrack
+INFO       2015-10-05 23:54:25,293 rabbitConnection               addHandler                           107 : adding handler for resume
+INFO       2015-10-05 23:54:25,297 rabbitConnection               addHandler                           107 : adding handler for pause
+INFO       2015-10-05 23:54:25,298 rabbitConnection               addHandler                           107 : adding handler for next
+INFO       2015-10-05 23:54:25,300 rabbitConnection               addHandler                           107 : adding handler for previous
+INFO       2015-10-05 23:54:25,302 rabbitConnection               addHandler                           107 : adding handler for playIdInPlaylist
+INFO       2015-10-05 23:54:25,304 rabbitConnection               addHandler                           107 : adding handler for playListAdd
+INFO       2015-10-05 23:54:25,306 rabbitConnection               addHandler                           107 : adding handler for playListSet
+INFO       2015-10-05 23:54:25,308 rabbitConnection               addHandler                           107 : adding handler for removeInPlaylist
+INFO       2015-10-05 23:54:25,311 rabbitConnection               addHandler                           107 : adding handler for setVolume
+INFO       2015-10-05 23:54:25,313 rabbitConnection               addHandler                           107 : adding handler for getVolume
+INFO       2015-10-05 23:54:25,317 rabbitConnection               addHandler                           107 : adding handler for setVolume
+INFO       2015-10-05 23:54:25,319 rabbitConnection               addHandler                           107 : adding handler for seek
+INFO       2015-10-05 23:54:25,322 rabbitConnection               connected                            110 : Sending connected callbacks
+INFO       2015-10-05 23:54:25,324 __main__                       init                                 183 : inititalize player data
+INFO       2015-10-05 23:54:25,356 requests.packages.urllib3.connectionpool _new_conn                            203 : Starting new HTTP connection (1): homypi.herokuapp.com
+INFO       2015-10-05 23:54:25,525 __main__                       init                                 185 : Got playlist: {u'playlist': {u'trackset': []}}
+INFO       2015-10-05 23:54:25,534 __main__                       playListSet                          148 : set playlist: None
+INFO       2015-10-05 23:54:25,545 __main__                       playListSet                          149 : from DB = True
+INFO       2015-10-05 23:54:25,552 playerClasses                  clear                                98  : clear playlist
+INFO       2015-10-05 23:54:25,583 rabbitConnection               emit                                 56  : playlist:playing:id: {'_id': None}  to module.player:module.player   type=None
+INFO       2015-10-05 23:54:26,114 __main__                       playListSet                          151 : data = {u'trackset': []}
+INFO       2015-10-05 23:54:26,232 rabbitConnection               handleMessage                        73  : got message: player:status
+INFO       2015-10-05 23:54:26,240 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:26,758 rabbitConnection               handleMessage                        73  : got message: playlist:playing:id
+INFO       2015-10-05 23:54:26,760 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:30,753 rabbitConnection               handleMessage                        73  : got message: resume
+INFO       2015-10-05 23:54:30,756 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:30,761 rabbitConnection               handleMessage                        78  : found <bound method Player.resume of <__main__.Player instance at 0x1a34d28>>
+INFO       2015-10-05 23:54:30,764 rabbitConnection               handleMessage                        84  : function takes 0 args
+INFO       2015-10-05 23:54:30,773 __main__                       resume                               108 : next track = None
+INFO       2015-10-05 23:54:30,908 rabbitConnection               handleMessage                        73  : got message: player:status
+INFO       2015-10-05 23:54:30,910 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:31,369 __main__                       play                                 99  : playlist empty
+INFO       2015-10-05 23:54:38,763 rabbitConnection               handleMessage                        73  : got message: playTrack
+INFO       2015-10-05 23:54:38,765 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:38,767 rabbitConnection               handleMessage                        78  : found <bound method Player.playTrackFromRequest of <__main__.Player instance at 0x1a34d28>>
+INFO       2015-10-05 23:54:38,770 rabbitConnection               handleMessage                        84  : function takes 1 args
+INFO       2015-10-05 23:54:38,772 rabbitConnection               handleMessage                        95  : {u'message': u'playTrack', u'data': {u'source': u'spotify', u'uri': u'spotify:track:1XDgeeNIbwXobo7EkcLa2u'}}
+INFO       2015-10-05 23:54:38,774 playerClasses                  clear                                98  : clear playlist
+INFO       2015-10-05 23:54:38,799 requests.packages.urllib3.connectionpool _new_conn                            203 : Starting new HTTP connection (1): homypi.herokuapp.com
+INFO       2015-10-05 23:54:38,946 playerClasses                  clear                                101 : {u'status': u'success'}
+INFO       2015-10-05 23:54:38,964 rabbitConnection               emit                                 56  : playlist:playing:id: {'_id': None}  to module.player:module.player   type=None
+INFO       2015-10-05 23:54:39,489 playerClasses                  add                                  30  : getting track info
+INFO       2015-10-05 23:54:39,518 requests.packages.urllib3.connectionpool _new_conn                            203 : Starting new HTTP connection (1): homypi.herokuapp.com
+INFO       2015-10-05 23:54:39,934 playerClasses                  add                                  37  : track = {u'track': {u'album': {u'images': [{u'url': u'https://i.scdn.co/image/1142b003f8d064fd00adbe5621f660d1a0e01e12', u'width': 640, u'height': 634}, {u'url': u'https://i.scdn.co/image/0b09ab0ef79304fa5b2f32651a900469770b469d', u'width': 300, u'height': 297}, {u'url': u'https://i.scdn.co/image/50a9ead2a2bb26e735695e2359adde8a6078b923', u'width': 64, u'height': 63}], u'album_type': u'album', u'id': u'18TiCDixtBNarD55Yw2aTU', u'uri': u'spotify:album:18TiCDixtBNarD55Yw2aTU'}, u'name': u'Give A Little Bit', u'uri': u'spotify:track:1XDgeeNIbwXobo7EkcLa2u', u'source': u'spotify', u'artists': [{u'uri': u'spotify:artist:3JsMj0DEzyWc0VDlHuy9Bx', u'id': u'3JsMj0DEzyWc0VDlHuy9Bx', u'name': u'Supertramp'}], u'duration_ms': 248173, u'_id': u'5612f19ffdbf551b001945c7', u'id': u'1XDgeeNIbwXobo7EkcLa2u'}}
+INFO       2015-10-05 23:54:39,937 __main__                       play                                 88  : playing spotify:track:1XDgeeNIbwXobo7EkcLa2u
+INFO       2015-10-05 23:54:39,939 spotify_player                 stop                                 156 : Stopping track
+INFO       2015-10-05 23:54:39,944 spotify_player                 play                                 114 : playing uri spotify:track:1XDgeeNIbwXobo7EkcLa2u
+INFO       2015-10-05 23:54:40,036 spotify_player                 play                                 124 : Loading track into player
+INFO       2015-10-05 23:54:40,055 spotify_player                 play                                 127 : Playing track
+INFO       2015-10-05 23:54:40,299 apscheduler.scheduler          _real_add_job                        743 : Added job "Player.sendProgress" to job store "default"
+INFO       2015-10-05 23:54:40,453 rabbitConnection               handleMessage                        73  : got message: playlist:track:progress
+INFO       2015-10-05 23:54:40,455 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:40,980 rabbitConnection               handleMessage                        73  : got message: player:status
+INFO       2015-10-05 23:54:40,982 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:41,429 rabbitConnection               handleMessage                        73  : got message: playlist:playing:id
+INFO       2015-10-05 23:54:41,436 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:45,289 apscheduler.executors.default  run_job                              106 : Running job "Player.sendProgress (trigger: interval[0:00:05], next run at: 2015-10-05 23:54:50 CEST)" (scheduled at 2015-10-05 23:54:45.279695+02:00)
+INFO       2015-10-05 23:54:45,397 rabbitConnection               handleMessage                        73  : got message: playlist:track:progress
+INFO       2015-10-05 23:54:45,399 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:45,834 apscheduler.executors.default  run_job                              117 : Job "Player.sendProgress (trigger: interval[0:00:05], next run at: 2015-10-05 23:54:50 CEST)" executed successfully
+INFO       2015-10-05 23:54:50,291 apscheduler.executors.default  run_job                              106 : Running job "Player.sendProgress (trigger: interval[0:00:05], next run at: 2015-10-05 23:54:50 CEST)" (scheduled at 2015-10-05 23:54:50.279695+02:00)
+INFO       2015-10-05 23:54:50,414 rabbitConnection               handleMessage                        73  : got message: playlist:track:progress
+INFO       2015-10-05 23:54:50,418 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:50,416 rabbitConnection               handleMessage                        73  : got message: playTrack
+INFO       2015-10-05 23:54:50,427 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:50,429 rabbitConnection               handleMessage                        78  : found <bound method Player.playTrackFromRequest of <__main__.Player instance at 0x1a34d28>>
+INFO       2015-10-05 23:54:50,431 rabbitConnection               handleMessage                        84  : function takes 1 args
+INFO       2015-10-05 23:54:50,433 rabbitConnection               handleMessage                        95  : {u'message': u'playTrack', u'data': {u'source': u'spotify', u'uri': u'spotify:track:1XDgeeNIbwXobo7EkcLa2u'}}
+INFO       2015-10-05 23:54:50,496 playerClasses                  clear                                98  : clear playlist
+INFO       2015-10-05 23:54:50,542 requests.packages.urllib3.connectionpool _new_conn                            203 : Starting new HTTP connection (1): homypi.herokuapp.com
+INFO       2015-10-05 23:54:50,852 apscheduler.executors.default  run_job                              117 : Job "Player.sendProgress (trigger: interval[0:00:05], next run at: 2015-10-05 23:54:55 CEST)" executed successfully
+INFO       2015-10-05 23:54:51,804 playerClasses                  clear                                101 : {u'status': u'success'}
+INFO       2015-10-05 23:54:51,829 rabbitConnection               emit                                 56  : playlist:playing:id: {'_id': None}  to module.player:module.player   type=None
+INFO       2015-10-05 23:54:52,353 playerClasses                  add                                  30  : getting track info
+INFO       2015-10-05 23:54:52,393 requests.packages.urllib3.connectionpool _new_conn                            203 : Starting new HTTP connection (1): homypi.herokuapp.com
+INFO       2015-10-05 23:54:53,196 playerClasses                  add                                  37  : track = {u'track': {u'album': {u'images': [{u'url': u'https://i.scdn.co/image/1142b003f8d064fd00adbe5621f660d1a0e01e12', u'width': 640, u'height': 634}, {u'url': u'https://i.scdn.co/image/0b09ab0ef79304fa5b2f32651a900469770b469d', u'width': 300, u'height': 297}, {u'url': u'https://i.scdn.co/image/50a9ead2a2bb26e735695e2359adde8a6078b923', u'width': 64, u'height': 63}], u'album_type': u'album', u'id': u'18TiCDixtBNarD55Yw2aTU', u'uri': u'spotify:album:18TiCDixtBNarD55Yw2aTU'}, u'name': u'Give A Little Bit', u'uri': u'spotify:track:1XDgeeNIbwXobo7EkcLa2u', u'source': u'spotify', u'artists': [{u'uri': u'spotify:artist:3JsMj0DEzyWc0VDlHuy9Bx', u'id': u'3JsMj0DEzyWc0VDlHuy9Bx', u'name': u'Supertramp'}], u'duration_ms': 248173, u'_id': u'5612f1adfdbf551b001945c9', u'id': u'1XDgeeNIbwXobo7EkcLa2u'}}
+INFO       2015-10-05 23:54:53,203 __main__                       play                                 88  : playing spotify:track:1XDgeeNIbwXobo7EkcLa2u
+INFO       2015-10-05 23:54:53,209 spotify_player                 stop                                 156 : Stopping track
+INFO       2015-10-05 23:54:53,221 spotify_player                 play                                 114 : playing uri spotify:track:1XDgeeNIbwXobo7EkcLa2u
+INFO       2015-10-05 23:54:53,230 spotify_player                 play                                 124 : Loading track into player
+INFO       2015-10-05 23:54:53,242 spotify_player                 play                                 127 : Playing track
+INFO       2015-10-05 23:54:53,247 apscheduler.scheduler          remove_job                           513 : Removed job 83f4af478866474ebe4c5a54d6671c6a
+INFO       2015-10-05 23:54:53,267 apscheduler.scheduler          _real_add_job                        743 : Added job "Player.sendProgress" to job store "default"
+INFO       2015-10-05 23:54:53,378 rabbitConnection               handleMessage                        73  : got message: playlist:track:progress
+INFO       2015-10-05 23:54:53,387 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:53,980 rabbitConnection               handleMessage                        73  : got message: player:status
+INFO       2015-10-05 23:54:54,005 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:54,423 rabbitConnection               handleMessage                        73  : got message: playlist:playing:id
+INFO       2015-10-05 23:54:54,426 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:54,435 rabbitConnection               handleMessage                        73  : got message: playTrack
+INFO       2015-10-05 23:54:54,438 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:54,441 rabbitConnection               handleMessage                        78  : found <bound method Player.playTrackFromRequest of <__main__.Player instance at 0x1a34d28>>
+INFO       2015-10-05 23:54:54,443 rabbitConnection               handleMessage                        84  : function takes 1 args
+INFO       2015-10-05 23:54:54,445 rabbitConnection               handleMessage                        95  : {u'message': u'playTrack', u'data': {u'source': u'spotify', u'uri': u'spotify:track:6mHOcVtsHLMuesJkswc0GZ'}}
+INFO       2015-10-05 23:54:54,447 playerClasses                  clear                                98  : clear playlist
+INFO       2015-10-05 23:54:54,473 requests.packages.urllib3.connectionpool _new_conn                            203 : Starting new HTTP connection (1): homypi.herokuapp.com
+INFO       2015-10-05 23:54:54,599 playerClasses                  clear                                101 : {u'status': u'success'}
+INFO       2015-10-05 23:54:54,617 rabbitConnection               emit                                 56  : playlist:playing:id: {'_id': None}  to module.player:module.player   type=None
+INFO       2015-10-05 23:54:55,152 playerClasses                  add                                  30  : getting track info
+INFO       2015-10-05 23:54:55,199 requests.packages.urllib3.connectionpool _new_conn                            203 : Starting new HTTP connection (1): homypi.herokuapp.com
+INFO       2015-10-05 23:54:55,407 playerClasses                  add                                  37  : track = {u'track': {u'album': {u'images': [{u'url': u'https://i.scdn.co/image/d654aa3ed5b211ee4b7ba75928045ddb1246142e', u'width': 640, u'height': 637}, {u'url': u'https://i.scdn.co/image/242bd71c5dfe35e7375f7af5dae82dd0cd7ba2b1', u'width': 300, u'height': 299}, {u'url': u'https://i.scdn.co/image/57c3da563393a679b7e3364fc75da153777a3a7a', u'width': 64, u'height': 64}], u'album_type': u'album', u'id': u'1zcm3UvHNHpseYOUfd0pna', u'uri': u'spotify:album:1zcm3UvHNHpseYOUfd0pna'}, u'name': u'The Logical Song - 2010 Remastered', u'uri': u'spotify:track:6mHOcVtsHLMuesJkswc0GZ', u'source': u'spotify', u'artists': [{u'uri': u'spotify:artist:3JsMj0DEzyWc0VDlHuy9Bx', u'id': u'3JsMj0DEzyWc0VDlHuy9Bx', u'name': u'Supertramp'}], u'duration_ms': 251253, u'_id': u'5612f1affdbf551b001945cb', u'id': u'6mHOcVtsHLMuesJkswc0GZ'}}
+INFO       2015-10-05 23:54:55,416 __main__                       play                                 88  : playing spotify:track:6mHOcVtsHLMuesJkswc0GZ
+INFO       2015-10-05 23:54:55,418 spotify_player                 stop                                 156 : Stopping track
+INFO       2015-10-05 23:54:55,440 spotify_player                 play                                 114 : playing uri spotify:track:6mHOcVtsHLMuesJkswc0GZ
+INFO       2015-10-05 23:54:55,532 spotify_player                 play                                 124 : Loading track into player
+INFO       2015-10-05 23:54:55,538 spotify_player                 play                                 127 : Playing track
+INFO       2015-10-05 23:54:55,546 apscheduler.scheduler          remove_job                           513 : Removed job f9f4ede9c96b438a88b48bb3fd680093
+INFO       2015-10-05 23:54:55,555 apscheduler.scheduler          _real_add_job                        743 : Added job "Player.sendProgress" to job store "default"
+INFO       2015-10-05 23:54:55,755 rabbitConnection               handleMessage                        73  : got message: playlist:track:progress
+INFO       2015-10-05 23:54:55,776 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:56,380 rabbitConnection               handleMessage                        73  : got message: player:status
+INFO       2015-10-05 23:54:56,382 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:56,761 rabbitConnection               handleMessage                        73  : got message: playlist:playing:id
+INFO       2015-10-05 23:54:56,767 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:59,011 rabbitConnection               handleMessage                        73  : got message: seek
+INFO       2015-10-05 23:54:59,015 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:54:59,032 rabbitConnection               handleMessage                        78  : found <bound method Player.seek of <__main__.Player instance at 0x1a34d28>>
+INFO       2015-10-05 23:54:59,034 rabbitConnection               handleMessage                        84  : function takes 1 args
+INFO       2015-10-05 23:54:59,038 rabbitConnection               handleMessage                        95  : {u'message': u'seek', u'data': {u'progress_ms': 150632}}
+INFO       2015-10-05 23:54:59,214 rabbitConnection               handleMessage                        73  : got message: playlist:track:progress
+INFO       2015-10-05 23:54:59,294 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:55:00,582 apscheduler.executors.default  run_job                              106 : Running job "Player.sendProgress (trigger: interval[0:00:05], next run at: 2015-10-05 23:55:00 CEST)" (scheduled at 2015-10-05 23:55:00.548798+02:00)
+INFO       2015-10-05 23:55:00,770 rabbitConnection               handleMessage                        73  : got message: playlist:track:progress
+INFO       2015-10-05 23:55:00,771 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:55:01,172 apscheduler.executors.default  run_job                              117 : Job "Player.sendProgress (trigger: interval[0:00:05], next run at: 2015-10-05 23:55:05 CEST)" executed successfully
+INFO       2015-10-05 23:55:04,178 rabbitConnection               handleMessage                        73  : got message: pause
+INFO       2015-10-05 23:55:04,179 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:55:04,182 rabbitConnection               handleMessage                        78  : found <bound method Player.pause of <__main__.Player instance at 0x1a34d28>>
+INFO       2015-10-05 23:55:04,192 rabbitConnection               handleMessage                        84  : function takes 0 args
+INFO       2015-10-05 23:55:04,194 spotify_player                 pause                                138 : Pausing track
+INFO       2015-10-05 23:55:04,206 apscheduler.scheduler          remove_job                           513 : Removed job 0a05d1c3b2b54223a9a1d4dea52f0767
+INFO       2015-10-05 23:55:04,307 rabbitConnection               handleMessage                        73  : got message: player:status
+INFO       2015-10-05 23:55:04,308 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:55:04,758 rabbitConnection               handleMessage                        73  : got message: pause
+INFO       2015-10-05 23:55:04,760 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+INFO       2015-10-05 23:55:04,762 rabbitConnection               handleMessage                        78  : found <bound method Player.pause of <__main__.Player instance at 0x1a34d28>>
+INFO       2015-10-05 23:55:04,766 rabbitConnection               handleMessage                        84  : function takes 0 args
+INFO       2015-10-05 23:55:04,768 spotify_player                 pause                                138 : Pausing track
+INFO       2015-10-05 23:55:04,774 apscheduler.scheduler          remove_job                           513 : Removed job 0a05d1c3b2b54223a9a1d4dea52f0767
+INFO       2015-10-05 23:55:04,893 rabbitConnection               handleMessage                        73  : got message: player:status
+INFO       2015-10-05 23:55:04,895 rabbitConnection               handleMessage                        74  : looking in 13 handlers
+ERROR      2015-10-05 23:57:30,087 __main__                       __init__                             58  : player module crashed
+ERROR      2015-10-05 23:57:30,094 __main__                       __init__                             59  : Traceback (most recent call last):
+  File "./player.py", line 54, in __init__
+    time.sleep(0.2)
+TypeError: stopApp() takes exactly 1 argument (3 given)
+
+INFO       2015-10-05 23:57:32,991 spotify.session                logged_out                           930 : Spotify logged out
+INFO       2015-10-05 23:57:33,626 apscheduler.scheduler          remove_job                           513 : Removed job 0a05d1c3b2b54223a9a1d4dea52f0767
