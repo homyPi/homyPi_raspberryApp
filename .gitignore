@@ -4,5 +4,7 @@ node_modules
 tmp
 src/modules/*/tmp
 src/modules/player/tmp
-*.log
-**/*.log
+*.pyc
+**/*.pyc
+src/python/*.pyc
+*.egg-info*
