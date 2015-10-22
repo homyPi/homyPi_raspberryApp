@@ -181,7 +181,7 @@ class Player:
     
     def init(self):
         LOGGER.info("inititalize player data")
-        res = self.serverHttpRequest.get("api/playlists");
+        res = self.serverHttpRequest.get("api/modules/music/playlists");
         LOGGER.info("Got playlist: " + str(res));
         if "playlist" in res and "trackset" in res["playlist"]:
             self.playListSet(res["playlist"], True)

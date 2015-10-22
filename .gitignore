@@ -1,4 +1,8 @@
 node_modules
-
+**/*.log
+**/tmp
 tmp
+src/modules/*/tmp
 src/modules/player/tmp
+*.log
+**/*.log

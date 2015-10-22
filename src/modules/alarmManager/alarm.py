@@ -69,10 +69,10 @@ class Alarm:
                       "executed_songs": playlist
                     }
                     print("set history");
-                    resp = Alarm.serverRequester.post('api/alarms/' + self._id + '/history', {"history": history});
+                    resp = Alarm.serverRequester.post('api/modules/alarms/' + self._id + '/history', {"history": history});
                     LOGGER.info(str(resp))
                     if self.repeat is False:
-                      resp = Alarm.serverRequester.put('api/alarms/' + self._id, {"enable": False});
+                      resp = Alarm.serverRequester.put('api/modules/alarms/' + self._id, {"enable": False});
                       print(str(resp))
                       LOGGER.info(str(resp))
 
