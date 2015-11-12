@@ -100,6 +100,7 @@ class Player:
     def playTrackFromRequest(self, data):
         if "source" in data and "uri" in data:
             self.playlist.clear()
+            LOGGER.info(str(data));
             self.playlist.add(Track(data["source"], data["uri"]))
             self.play()
             

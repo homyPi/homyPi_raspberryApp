@@ -37,7 +37,7 @@ class Alarm:
         else:
             print("start alarm")
             if Alarm.serverRequester is not None:
-                resp = Alarm.serverRequester.get('api/musicgraph/playlist')
+                resp = Alarm.serverRequester.get('api/modules/music/playlists/generate?generator=musicgraph&musicSource=spotify')
                 LOGGER.info(str(resp))
                 if "err" in resp or "error" in resp:
                   if self.nbTry < 5:
