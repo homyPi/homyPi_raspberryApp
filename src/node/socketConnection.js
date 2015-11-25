@@ -6,18 +6,14 @@ module.exports = function(app) {
     "use strict";
     var socket;
     var wasConnected = false;
-    var connect = function(callback) {
+    var connect = function(raspInfo, callback) {
         app.middleware.serverConnection.connectionToken().then(
             function(token) {
                 console.log("creating socket");
                 socket = io.connect(app.settings.host, {
-                    'query' : 'token=' + token
+                    'query' : 'token=' + token + "&info=" + JSON.stringify(raspInfo)
                 });
                 socket.on('connect', function() {
-                    socket.emit("pi:login", {
-                        "name" : "rasp1",
-                        "ip" : "92.68.1.0"
-                    });
                     console.log("connected");
                     app.middleware.socketConnection.socket = socket;
                     callback(token, wasConnected);

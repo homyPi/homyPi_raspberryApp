@@ -72,11 +72,17 @@ module.exports = function(app) {
 			modules[i].setSocket();
 		}
 	};
+	var socketReconnected = function() {
+		for (var i = 0; i < modules.length; i ++) {
+			modules[i].emit("reconnected");
+		}
+	}
 	app.middleware.modulesManager = {
 		setSockets: setSockets,
 		runModules: runModules,
 		setupModules: setupModules,
 		killAll: killAll,
-		onConnected: onConnected
+		onConnected: onConnected,
+		socketReconnected: socketReconnected
 	};
 };

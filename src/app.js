@@ -54,14 +54,23 @@ modulesManager(app);
 function connect() {
     "use strict";
     console.log("Starting...");
-    app.middleware.socketConnection.connect(function(token, reconnection) {
-        console.log("callback");
+    var raspInfo = {
+        name: "Jonny",
+        ip : "92.68.1.0",
+        modules: {}
+    }
+    app.middleware.socketConnection.connect(raspInfo,
+        function(token, reconnection) {
+            console.log("callback");
             if (!reconnection) {
-            serverRequest(app);
-        app.middleware.modulesManager.setSockets();
-            app.middleware.modulesManager.runModules();
-        }
-    	    //app.middleware.modulesManager.onConnected();
+                serverRequest(app);
+                app.middleware.modulesManager.setSockets();
+                app.middleware.modulesManager.runModules();
+            } else {
+                try {
+                app.middleware.modulesManager.socketReconnected();
+            }catch(e) {console.log(e);}
+            }
         });
 }
 var stop = function(err, status){

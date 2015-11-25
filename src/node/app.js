@@ -35,11 +35,10 @@ require("./modulesManager")(app);
 function connect() {
     "use strict";
     console.log("Starting...");
-    app.middleware.socketConnection.connect(function() {
-        console.log("callback");
+                    
+    app.middleware.socketConnection.connect(raspInfo, function() {
+        console.log("socket connected");
         require("./serverRequest")(app);
-        //app.middleware.modulesManager.setSockets();
-        //app.middleware.modulesManager.onConnected();
     });
 }
 
@@ -55,9 +54,13 @@ process.on('SIGINT', function() {
     process.exit(2);
 });
 
-app.middleware.modulesManager.setupModules(app);
-app.middleware.modulesManager.runModules(app)
+try {
+    app.middleware.modulesManager.setupModules(app);
+    app.middleware.modulesManager.runModules(app)
     connect();
+} catch(e) {
+    console.log(e);
+}
 
 
 module.exports = app;

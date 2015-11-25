@@ -49,6 +49,7 @@ class Player:
             self.setHandlers()
             self.rabbitConnection.onConnected(self.init)
             self.rabbitConnection.start()
+            self.onSocketReconnect();
         
             while True:
                   time.sleep(0.2)
@@ -64,6 +65,12 @@ class Player:
             self.job = None;
         self.job = sched.add_job(self.sendProgress, "interval", seconds=5)
         self.sendProgress();
+
+    def onSocketReconnect(self):
+        self.server.emit("raspberry:module:new", {
+                "name": "music",
+                "status": "PAUSED" 
+            });
 
     def stopApp(self):
         try:
@@ -186,7 +193,6 @@ class Player:
         LOGGER.info("Got playlist: " + str(res));
         if "playlist" in res and "trackset" in res["playlist"]:
             self.playListSet(res["playlist"], True)
-        self.server.emit("player:status", {'status':"PAUSED"})
 
     def sendProgress(self):
         print(str(self.spotifyPlayer.position))
@@ -210,7 +216,7 @@ class Player:
         self.rabbitConnection.addHandler("getVolume", self.getVolume)
         self.rabbitConnection.addHandler("setVolume", self.setVolume)
         self.rabbitConnection.addHandler("seek", self.seek)
-        
+        self.rabbitConnection.addHandler("reconnected", self.onSocketReconnect)
 
 
 if __name__ == '__main__':

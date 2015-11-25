@@ -71,6 +71,19 @@ Link.runModule = function() {
     });
 };
 
+Link.emit = function(message, data) {
+    if (data) {
+        Link.pub.publish(route, JSON.stringify({
+            message : message,
+            data: data
+        }));
+        return;
+    }
+    Link.pub.publish(route, JSON.stringify({
+        message : message
+    }));
+};
+
 
 Link.init = function(app) {
     "use strict";

@@ -86,6 +86,20 @@ Link.init = function(app) {
     "use strict";
     Link.app = app;
 };
+
+Link.emit = function(message, data) {
+    if (data) {
+        Link.pub.publish(route, JSON.stringify({
+            message : message,
+            data: data
+        }));
+        return;
+    }
+    Link.pub.publish(route, JSON.stringify({
+        message : message
+    }));
+};
+
 Link.setSocket = function() {
     "use strict";
 	console.log("set socket alarm");
