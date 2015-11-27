@@ -41,7 +41,8 @@ var app = {
     settings: {
         host: config.Server.url,
         username: config.Server.username,
-        password: config.Server.password
+        password: config.Server.password,
+        name: config.Server.name
     },
     args: args,
     middleware: {}
@@ -49,13 +50,14 @@ var app = {
 socketConnection(app);
 serverConnection(app);
 modulesManager(app);
+checkConfig(config);
 
 
 function connect() {
     "use strict";
     console.log("Starting...");
     var raspInfo = {
-        name: "Jonny",
+        name: app.settings.name,
         ip : "92.68.1.0",
         modules: {}
     }
@@ -73,12 +75,38 @@ function connect() {
             }
         });
 }
-var stop = function(err, status){
+function stop(err, status){
 	console.log({error: err, status: status});
 	process.stdin.resume();
 	app.middleware.modulesManager.killAll();
 	process.exit(2);
 };
+function checkConfig(config) {
+    if (!config) {
+        stop("Missing configs", "exit");
+        return;
+    }
+    if (!config.Server) {
+        stop("Missing serveur configs", "exit");
+        return;
+    }
+    if (!config.Server.username) {
+        stop("Missing field username in configs", "exit");
+        return;
+    }
+    if (!config.Server.password) {
+        stop("Missing field password in configs", "exit");
+        return;
+    }
+    if (!config.Server.name) {
+        stop("Missing field name in configs", "exit");
+        return;
+    }
+    if (!config.Server) {
+        stop("Missing field in configs", "exit");
+        return;
+    }
+}
 
 process.on('exit', function() {
 	stop(null, "exit");

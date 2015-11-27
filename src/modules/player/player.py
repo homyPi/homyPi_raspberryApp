@@ -30,7 +30,7 @@ queue_name = "player"
 class Player:
     spotifyPlayer = None
     def __init__(self, config):
-        self.playlist = Playlist()
+        self.playlist = Playlist(config.get("Server", "name"))
         self.job = None;
         self.serverHttpRequest = ServerHttpRequest(config.get("Server", "url"),
                                                    config.get("Server", "username"),

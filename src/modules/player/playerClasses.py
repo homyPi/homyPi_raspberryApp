@@ -20,7 +20,9 @@ class Track:
 class Playlist:
 	rabbitConnection = None;
 	serverHttpRequest = None;
-	def __init__(self, tracks=[]):
+	playerName = ""
+	def __init__(self, playerName, tracks=[]):
+		self.playerName = playerName;
 		self.tracks = tracks;
 		self.setCurrent(0);
 
@@ -28,7 +30,7 @@ class Playlist:
 		self.tracks.append(track)
 		if not fromDB:
 			LOGGER.info("getting track info")
-			res = Playlist.serverHttpRequest.post("api/modules/music/playlists/", {
+			res = Playlist.serverHttpRequest.post("api/modules/music/playlists/" + self.playerName, {
 				"track": {
 					"uri": track.uri,
 					"source": track.source
@@ -44,7 +46,7 @@ class Playlist:
 			req.append({"uri": track.uri, "source": track.source})
 		if not fromDB:
 			LOGGER.info("getting track info " + str(req));
-			res = Playlist.serverHttpRequest.post("api/modules/music/playlists/", {
+			res = Playlist.serverHttpRequest.post("api/modules/music/playlists/" + self.playerName, {
 				"trackset": req
 			});
 			LOGGER.info("track = " + str(res))
@@ -69,12 +71,12 @@ class Playlist:
 			return None
 	def remove(self, key):
 		if key > 0 and len(self.tracks) > key:
-			res = Playlist.serverHttpRequest.delete("api/modules/music/playlists/" + self.tracks[key]._id);
+			res = Playlist.serverHttpRequest.delete("api/modules/music/playlists/" + self.playerName + "/" + self.tracks[key]._id);
 			del self.tracks[key]
 	def removeById(self, _id):
 		for index in range(len(self.tracks)):
 			if self.tracks[index]._id == _id:
-				res = Playlist.serverHttpRequest.delete("api/modules/music/playlists/" + self.tracks[index]._id);
+				res = Playlist.serverHttpRequest.delete("api/modules/music/playlists/" + self.playerName + "/"  + self.tracks[index]._id);
 				del self.tracks[index]
 				LOGGER.info(str(res));
 				break;
@@ -97,7 +99,7 @@ class Playlist:
 	def clear(self, fromDb=False):
 		LOGGER.info("clear playlist")
 		if not fromDb:
-			res = Playlist.serverHttpRequest.get("api/modules/music/playlists/clear");
+			res = Playlist.serverHttpRequest.get("api/modules/music/playlists/" + self.playerName + "/clear");
 			LOGGER.info(str(res));
 		self.tracks = [];
 		self.setCurrent(0);
@@ -109,5 +111,5 @@ class Playlist:
 			id = None
 			if currentTrack is not None:
 				id = currentTrack._id;
-			Playlist.rabbitConnection.emit("playlist:playing:id", {"_id": id})
+			Playlist.rabbitConnection.emit("playlist:playing:id", {"raspberry": {"name": self.playerName}, "_id": id})
 
