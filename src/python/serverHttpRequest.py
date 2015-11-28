@@ -17,6 +17,7 @@ class ServerHttpRequest:
     def getToken(self):
         r = requests.post(self.url + "api/users/login",
                       json={"username": self.username, "password": self.password})
+        r.raise_for_status()
         print(r.text)
         response = r.json()
         self.token = response["token"];
@@ -25,9 +26,15 @@ class ServerHttpRequest:
     def get(self, url):
         print("get ", url)
         headers={"Authorization": "Bearer " + self.token}
-        r = requests.get(self.url + url, headers=headers)
-        r.raise_for_status()
-        return r.json()
+        try:
+            r = requests.get(self.url + url, headers=headers)
+            r.raise_for_status()
+        except requests.exceptions.RequestException as e:    # This is the correct syntax
+            return {'error': e}
+        try:
+            return r.json()
+        except ValueError:
+            return {}
 
     def post(self, url, data={}):
         headers={"Authorization": "Bearer " + self.token}

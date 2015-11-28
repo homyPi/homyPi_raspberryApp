@@ -9,17 +9,17 @@ Link.app = {
 };
 Link.sub = null;
 Link.pub = null;
-    "use strict";
-    Link.context = rabbit.createContext();
-        Link.context.on('ready', function() {
-    Link.pub = Link.context.socket('PUBLISH', {routing: "direct"});
-            Link.pub.connect(route, function() {
-                console.log("player pub ready");
-                Link.pub.on("error", function(err) {
-                    console.log(err);
-                })
-        });
+
+Link.context = rabbit.createContext();
+Link.context.on('ready', function() {
+Link.pub = Link.context.socket('PUBLISH', {routing: "direct"});
+Link.pub.connect(route, function() {
+    console.log("player pub ready");
+    Link.pub.on("error", function(err) {
+        console.log(err);
+        })
     });
+});
 Link.killExisting = function(callback) {
     console.log("killing existing modules");
     ps.lookup({
@@ -93,7 +93,7 @@ Link.setSocket = function() {
     "use strict";
     console.log("set player socket listeners")
     Link.app.middleware.socketConnection.socket.on("player:play:track", function(data) {
-        console.log(" server response resume");
+        console.log(" server response resume", data, route);
         Link.pub.publish(route, JSON.stringify({
             message : "playTrack",
             data: data

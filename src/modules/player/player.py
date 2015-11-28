@@ -8,7 +8,8 @@ sched = BackgroundScheduler()
 sched.start()
 
 sys.path.append( "./../../python" )
-from rabbitConnection import RabbitConnection, ServerRequester
+from rabbitConsumer import RabbitConsumer
+from rabbitEmitter import RabbitEmitter, ServerRequester
 from spotify_player import SpotifyPlayer
 from playerClasses import Track, Playlist
 from serverHttpRequest import ServerHttpRequest
@@ -32,6 +33,7 @@ class Player:
     def __init__(self, config):
         self.playlist = Playlist(config.get("Server", "name"))
         self.job = None;
+        self.name = config.get("Server", "name")
         self.serverHttpRequest = ServerHttpRequest(config.get("Server", "url"),
                                                    config.get("Server", "username"),
                                                    config.get("Server", "password"))
@@ -39,8 +41,8 @@ class Player:
         signal.signal(signal.SIGINT, self.stopApp)
         LOGGER.info("starting player module")
         self.server = ServerRequester("serverRequest.player")
-        self.rabbitConnection = RabbitConnection("module.player", "module.player")
-        Playlist.rabbitConnection = self.rabbitConnection;
+        self.rabbitConnection = RabbitConsumer("module.player", "module.player")
+        Playlist.rabbitConnection = self.server;
         try:
             sp_user = config.get('Spotify', 'username');
             sp_pwd = config.get('Spotify', 'password');
@@ -76,9 +78,6 @@ class Player:
         try:
             if self.spotifyPlayer is not None:
                 self.spotifyPlayer.exit()
-            if self.server is not None:
-                self.server.stop()
-                self.server.join()
             if self.rabbitConnection is not None:
                 self.rabbitConnection.stop()
                 self.rabbitConnection.join()
@@ -98,7 +97,7 @@ class Player:
                     self.next();
                 else:
                     self.setSendProgressJob()
-                    self.server.emit("player:status", {'status':'PLAYING', "playingId": track._id})
+                    self.server.emit("player:status", {"player": {"name": self.name, }, 'status':'PLAYING', "playingId": track._id})
         else:
             if self.job is not None:
                 self.job.remove()
@@ -189,7 +188,7 @@ class Player:
     
     def init(self):
         LOGGER.info("inititalize player data")
-        res = self.serverHttpRequest.get("api/modules/music/playlists");
+        res = self.serverHttpRequest.get("api/modules/music/playlists/" + self.name);
         LOGGER.info("Got playlist: " + str(res));
         if "playlist" in res and "trackset" in res["playlist"]:
             self.playListSet(res["playlist"], True)

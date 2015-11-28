@@ -3,7 +3,8 @@ import pika
 import sys
 import argparse
 sys.path.append( "./../../python" )
-from rabbitConnection import RabbitConnection, ServerRequester
+from rabbitConsumer import RabbitConsumer
+from rabbitEmitter import RabbitEmitter, ServerRequester
 from alarm import Alarm
 from serverHttpRequest import ServerHttpRequest
 from os.path import expanduser
@@ -28,10 +29,14 @@ class AlarmManager:
                                                    config.get("Server", "username"),
                                                    config.get("Server", "password"))
         LOGGER.info("ServerHttpRequest ready")
-        self.server = ServerRequester("serverRequest.player")
+        try:
+            self.server = ServerRequester("serverRequest.player")
+        except:
+            LOGGER.error("alarm module crashed")
+            LOGGER.error(traceback.format_exc())
         Alarm.serverRequester = self.serverHttpRequest
-        self.rabbitConnectionAlarm = RabbitConnection("module.alarm", "module.alarm")
-        self.rabbitConnectionPlayer = RabbitConnection("module.player", "module.player")
+        self.rabbitConnectionAlarm = RabbitConsumer("module.alarm", "module.alarm")
+        self.rabbitConnectionPlayer = RabbitEmitter("module.player", "module.player")
         Alarm.rabbitConnectionPlayer = self.rabbitConnectionPlayer
         try:
             self.setHandlers()

@@ -12,7 +12,7 @@ LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(filename='module.log',level=logging.INFO, format=LOG_FORMAT)
 
-class RabbitConnection(threading.Thread):
+class RabbitConsumer(threading.Thread):
     handlers = []
     def __init__(self, EXCHANGE, ROUTING_KEY, QUEUE = "", exchange_type = "direct"):
         threading.Thread.__init__(self)
@@ -50,22 +50,6 @@ class RabbitConnection(threading.Thread):
                 message.ack()
         except KeyboardInterrupt:
             print 'Exited consumer'
-                    
-    def emit(self, message, data = None, type = None):
-        with self.connection.channel() as channel:
-            LOGGER.info(message+": "+str(data)+ "  to "+str(self.EXCHANGE)+":"+str(self.ROUTING_KEY)+ "   type="+str(type))
-            if data is None:
-                if type is not None:
-                    body = json.dumps({"message": message, "type": type})
-                else:
-                    body = json.dumps({"message": message})
-            else:
-                if type is not None:
-                    body = json.dumps({"message": message,"data": data, "type": type})
-                else:
-                    body = json.dumps({"message": message,"data": data})                
-            message = rabbitpy.Message(channel, body)
-            message.publish(self.EXCHANGE, self.ROUTING_KEY)
     def handleMessage(self, body):
         try:
             data = json.loads(str(body))
@@ -122,38 +106,3 @@ class RabbitConnection(threading.Thread):
         self.running = False
         self.queueConsuming.stop_consuming()
         
-class ServerRequester(RabbitConnection):
-    def __init__(self, routing_key):
-        RabbitConnection.__init__(self, "serverRequest", routing_key, exchange_type = "topic")
-        self.start()
-
-    def emit(self, message, data = None, type = None):
-        with self.connection.channel() as channel:
-            LOGGER.debug(message+": "+str(data)+ "  to "+str(self.EXCHANGE)+":"+str(self.ROUTING_KEY)+ "   type="+str(type))
-            if data is None:
-                if type is not None:
-                    body = json.dumps({"message": message, "type": type})
-                else:
-                    body = json.dumps({"message": message})
-            else:
-                if type is not None:
-                    body = json.dumps({"message": message,"data": data, "type": type})
-                else:
-                    body = json.dumps({"message": message,"data": data})
-            message = rabbitpy.Message(channel, body, properties={"reply_to": str(self.queueConsuming.name)});
-            message.publish(self.EXCHANGE, self.ROUTING_KEY)
-if __name__ == "__main__":
-    try:
-        rabbitConnection = RabbitConnection("player", "player")
-        print("starting consumer")
-        rabbitConnection.start()
-        server = ServerRequester("serverRequest.player")
-        while True:
-            time.sleep(0.5)
-    except KeyboardInterrupt:
-        server.stop()
-        server.join()
-        rabbitConnection.stop()
-        rabbitConnection.join()
-        rabbitConnection.join()
-        sys.exit(2)
