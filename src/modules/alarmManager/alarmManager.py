@@ -20,11 +20,14 @@ LOGGER = logging.getLogger(__name__)
 logging.basicConfig(filename='module.log',level=logging.DEBUG, format=LOG_FORMAT)
 queue_nameAlarm = "player"
 queue_namePlayer = "alarm"
+name = None;
 class AlarmManager:
     spotifyPlayer = None
     def __init__(self, config):
         LOGGER.info("starting alarm module")
         LOGGER.info("Getting a token")
+        self.name = config.get("Server", "name")
+        Alarm.name = self.name
         self.serverHttpRequest = ServerHttpRequest(config.get("Server", "url"),
                                                    config.get("Server", "username"),
                                                    config.get("Server", "password"))

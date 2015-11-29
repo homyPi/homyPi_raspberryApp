@@ -13,6 +13,7 @@ LOGGER = logging.getLogger(__name__)
 logging.basicConfig(filename='module.log',level=logging.INFO, format=LOG_FORMAT)
 
 class Alarm:
+      name = None;
       serverRequester = None
       rabbitConnectionPlayer = None
       timezone=pytz.timezone('Europe/Paris')
@@ -117,16 +118,21 @@ class Alarm:
         print(str(alarms))
         print("===============")
         if not isinstance(alarms, list):
-            alarms = [alarms]
+          if "raspberry" not in alarms or "name" not in alarms["raspberry"]:
+            return
+          if Alarm.name != alarms["raspberry"]["name"]:
+            return;
+          alarms = [alarms]
         try:
             for data in alarms:
-                hours = data['hours']
-                minutes = data['minutes']
-                if not Alarm.exist(hours, minutes):
-                    alarm = Alarm(data['_id'], hours, minutes, data['enable'], data['repeat'])
-                    Alarm.alarms.append(alarm)
-                else:
-                    LOGGER.info("An alarm already exists at " + str(hours) + ":" + str(minutes))
+                if Alarm.name == data["raspberry"]["name"]:
+                  hours = data['hours']
+                  minutes = data['minutes']
+                  if not Alarm.exist(hours, minutes):
+                      alarm = Alarm(data['_id'], hours, minutes, data['enable'], data['repeat'])
+                      Alarm.alarms.append(alarm)
+                  else:
+                      LOGGER.info("An alarm already exists at " + str(hours) + ":" + str(minutes))
         except KeyError:
                 d = Alarm.ISO_to_date(data['alarm']['date'])
                 if not Alarm.exist(d):
