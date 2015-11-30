@@ -46,6 +46,7 @@ class AlarmManager:
             self.rabbitConnectionAlarm.onConnected(self.init)
             self.rabbitConnectionAlarm.start()
             self.rabbitConnectionPlayer.start()
+            self.onSocketReconnect();
             while True:
                   time.sleep(0.2)
         except KeyboardInterrupt:
@@ -59,10 +60,16 @@ class AlarmManager:
     def init(self):
         self.server.emit("alarms:get");
      
+    def onSocketReconnect(self):
+        self.server.emit("raspberry:module:new", {
+                "name": "alarm",
+                "status": "PAUSED" 
+            });
     def setHandlers(self):
         LOGGER.info("set handlers")
         self.rabbitConnectionAlarm.addHandler("alarms:update", Alarm.responseToObject)
         self.rabbitConnectionAlarm.addHandler("alarms:new", Alarm.responseToObject)
+        self.rabbitConnectionAlarm.addHandler("reconnected", self.onSocketReconnect)
 
         
 if __name__ == '__main__':
