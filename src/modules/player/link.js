@@ -7,6 +7,7 @@ var Link = function() {};
 Link.app = {
 	args: {}
 };
+Link.players = [];
 Link.sub = null;
 Link.pub = null;
 
@@ -52,11 +53,13 @@ Link.runModule = function() {
     "use strict";
     Link.killExisting(function(err) {
         console.log("Link.app.args.alone = " + Link.app.args.alone);
+        console.log("players = ", JSON.stringify(Link.players, null, 2));
         if (!Link.app.args.alone) {
-            console.log("stating player.py");
+            var playersStr = JSON.stringify(Link.players);
+            console.log("stating player.py --players '" + playersStr + "'");
             var child = require('child_process').spawn(
     	        'python',
-                [ "./player.py"],
+                [ "./player.py", "--players", "" + playersStr + ""],
     	        {cwd: __dirname}
             );
             child.on('close', function(code) {
@@ -171,6 +174,14 @@ Link.setSocket = function() {
         }));
     });
 };
+
+Link.addPlayer = function(moduleName, className, path) {
+    Link.players.push({
+        moduleName: moduleName,
+        className: className,
+        path: path
+    });
+}
 
 module.exports = Link;
 

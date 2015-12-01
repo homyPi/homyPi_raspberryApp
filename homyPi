@@ -1,1 +1,7 @@
-node src/app.js
+dir=$(dirname $(readlink -f $0))
+export HOMYPI_MODULES_PATH=$dir"/src/modules/"
+export HOMYPI_PYTHON_MODULES=$dir"/src/python/"
+
+echo "modules path: HOMYPI_MODULES_PATH="$HOMYPI_MODULES_PATH
+echo "python modules: HOMYPI_PYTHON_MODULES="$HOMYPI_PYTHON_MODULES
+node $dir"/src/app.js"

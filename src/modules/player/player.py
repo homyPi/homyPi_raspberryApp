@@ -1,36 +1,46 @@
 #!/usr/bin/env python
+#
+import logging
+LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
+              '-35s %(lineno) -5d: %(message)s')
+LOGGER = logging.getLogger(__name__)
+logging.basicConfig(filename='module.log',level=logging.DEBUG, format=LOG_FORMAT)
+
 import pika
 import sys
 import argparse
+import os
 
 from apscheduler.schedulers.background import BackgroundScheduler
 sched = BackgroundScheduler()
 sched.start()
 
-sys.path.append( "./../../python" )
+pythonModulesPath = os.getenv('HOMYPI_PYTHON_MODULES');
+LOGGER.info(pythonModulesPath)
+sys.path.append( pythonModulesPath )
 from rabbitConsumer import RabbitConsumer
 from rabbitEmitter import RabbitEmitter, ServerRequester
 from spotify_player import SpotifyPlayer
 from playerClasses import Track, Playlist
 from serverHttpRequest import ServerHttpRequest
+from dynamicModule import DynamicModule
 import alsaaudio
 from os.path import expanduser
 from ConfigParser import SafeConfigParser
 import json
 import time
-import logging
 import traceback
 import signal
 import setproctitle
+LOGGER.info("imports ready")
 
-LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
-              '-35s %(lineno) -5d: %(message)s')
-LOGGER = logging.getLogger(__name__)
-logging.basicConfig(filename='module.log',level=logging.DEBUG, format=LOG_FORMAT)
 queue_name = "player"
 class Player:
     spotifyPlayer = None
-    def __init__(self, config):
+    def __init__(self, config, playersConfig):
+        LOGGER.info("__init__ player")
+        self.moduleLoader = DynamicModule(playersConfig)
+        self.players = self.moduleLoader.load()
         self.playlist = Playlist(config.get("Server", "name"))
         self.job = None;
         self.name = config.get("Server", "name")
@@ -44,10 +54,12 @@ class Player:
         self.rabbitConnection = RabbitConsumer("module.player", "module.player")
         Playlist.rabbitConnection = self.server;
         try:
-            sp_user = config.get('Spotify', 'username');
-            sp_pwd = config.get('Spotify', 'password');
+            #sp_user = config.get('Spotify', 'username');
+            #sp_pwd = config.get('Spotify', 'password');
+            for p in players:
+                self.spotifyPlayer = p["class"](config, self.next)
             print("starting spotify player")
-            self.spotifyPlayer = SpotifyPlayer(sp_user, sp_pwd, self.server, self.next)
+            #self.spotifyPlayer = SpotifyPlayer(config, self.next)
             self.setHandlers()
             self.rabbitConnection.onConnected(self.init)
             self.rabbitConnection.start()
@@ -219,14 +231,26 @@ class Player:
 
 
 if __name__ == '__main__':
-    print("Starting player module")  
+    LOGGER.info("Starting player module")  
     setproctitle.setproctitle("hommyPi_player")
     parser = argparse.ArgumentParser(description='Client for the HAPI server')
-    parser.add_argument('--conf', help='Path to the configuration file')           
+    parser.add_argument('--conf', help='Path to the configuration file')
+    parser.add_argument('--players', help='Players')
     args = parser.parse_args()
     confPath = expanduser("~") + '/.hommyPi_conf'
-    if args.conf is not None:
-       confPath = args.conf
+    LOGGER.info("Checking args")
+    try:
+        if args.conf is not None:
+           confPath = args.conf
+        if args.players is not None:
+            LOGGER.info(args.players)
+            players = json.loads(args.players);
+        else:
+            players = [];
+    except:
+        LOGGER.error("player module crashed")
+        LOGGER.error(traceback.format_exc())
+    LOGGER.info("Checking config")
     config = SafeConfigParser()
     config.read(confPath)
-    player = Player(config)
+    player = Player(config, players);

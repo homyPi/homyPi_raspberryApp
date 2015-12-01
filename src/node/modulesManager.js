@@ -2,7 +2,7 @@ var fs = require("fs");
 var path = require("path");
 var _ = require("lodash");
 
-var MODULES_PATH = path.join(__dirname, "../modules/");
+var MODULES_PATH = process.env.HOMYPI_MODULES_PATH;
 
 module.exports = function(app) {
 	"use strict";
@@ -28,7 +28,7 @@ module.exports = function(app) {
 
 	var killAll = function() {
 		for (var i = 0; i < modules.length; i ++) {
-			if (modules[i].child) {
+			if (modules[i].child && modules[i].child.kill) {
 				console.log("killing " + modules[i].name);
 				modules[i].child.kill();
 			}
@@ -37,7 +37,9 @@ module.exports = function(app) {
 	};
 	var runModules = function() {
 		for (var i = 0; i < modules.length; i ++) {
-			modules[i].child = modules[i].runModule();
+			if (modules[i].runModule) {
+				modules[i].child = modules[i].runModule();
+			}
 		}
 	};
 	var setupModules = function() {
@@ -50,16 +52,18 @@ module.exports = function(app) {
 			}
 			if (!ignore) {
 				var linkPath = path.join(MODULES_PATH, name) + "/link.js";
+				var configPath = path.join(MODULES_PATH, name) + "/config.json";
 				var m;
 				try {
 					fs.statSync(linkPath);
 					m = require(linkPath);
-				} catch (e) {
+					m.config = require(configPath);
+				} catch(e) {
 					error = e;
 					return false;
 				}
 				console.log("init " + name);
-				m.init(app);
+				m.init(app, modules);
 				modules.push(m);
 			} else {
 				console.log("ignoring " + name);
@@ -69,12 +73,14 @@ module.exports = function(app) {
 	};
 	var setSockets = function() {
 		for (var i = 0; i < modules.length; i ++) {
-			modules[i].setSocket();
+			if (modules[i].setSocket)
+				modules[i].setSocket();
 		}
 	};
 	var socketReconnected = function() {
 		for (var i = 0; i < modules.length; i ++) {
-			modules[i].emit("reconnected");
+			if (modules[i].emit)
+				modules[i].emit("reconnected");
 		}
 	}
 	app.middleware.modulesManager = {

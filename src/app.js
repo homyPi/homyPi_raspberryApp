@@ -1,5 +1,5 @@
 var ini = require('node-ini');
-
+console.log("modules = ",process.env.HOMYPI_MODULES_PATH);
 var socketConnection = require("./node/socketConnection");
 var serverConnection = require("./node/serverConnection");
 var modulesManager = require("./node/modulesManager");

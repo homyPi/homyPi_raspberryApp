@@ -1,0 +1,13 @@
+{
+	modules: [
+		{
+			name: "player"
+		},
+		{
+			name: "alarm"
+		},
+		{
+			name: "spotify"
+		}
+	]
+}
