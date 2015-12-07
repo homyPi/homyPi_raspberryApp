@@ -173,6 +173,12 @@ Link.setSocket = function() {
             data : data
         }));
     });
+    Link.app.middleware.socketConnection.socket.on("player:volume:set", function(data) {
+        Link.pub.publish(route, JSON.stringify({
+            message : "setVolume",
+            data : data
+        }));
+    });
 };
 
 Link.addPlayer = function(moduleName, className, path) {

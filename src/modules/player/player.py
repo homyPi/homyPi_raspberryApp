@@ -83,7 +83,8 @@ class Player:
     def onSocketReconnect(self):
         self.server.emit("raspberry:module:new", {
                 "name": "music",
-                "status": "PAUSED" 
+                "status": "PAUSED",
+                "volume": self.getVolume()
             });
 
     def stopApp(self):
@@ -189,14 +190,16 @@ class Player:
         self.spotifyPlayer.playListLoad(data)
     def play_local(self):
         print("local")
-    def getVolume(self, data):
+    def getVolume(self):
         mixer = alsaaudio.Mixer("PCM");
-        self.rabbitConnection.emit("raspberry:sound:volume", {"volume": mixer.getvolume()}, type="server_request")
+        LOGGER.info("Volume = " + str(mixer.getvolume()[0]))
+        return mixer.getvolume()[0];
       
     def setVolume(self, data):
         mixer = alsaaudio.Mixer("PCM");
+        LOGGER.info("SET Volume = " + str(data['volume']))
         mixer.setvolume(int(data['volume']));
-        self.rabbitConnection.emit("raspberry:sound:volume", {"volume": mixer.getvolume()}, type="server_request")
+        self.rabbitConnection.emit("player:volume:isSet", {"volume": self.getVolume()}, type="server_request")
     
     def init(self):
         LOGGER.info("inititalize player data")
