@@ -87,7 +87,7 @@ class Player:
                 "volume": self.getVolume()
             });
 
-    def stopApp(self):
+    def stopApp(self, arg1=None, arg2=None):
         try:
             if self.spotifyPlayer is not None:
                 self.spotifyPlayer.exit()
@@ -191,6 +191,7 @@ class Player:
     def play_local(self):
         print("local")
     def getVolume(self):
+        LOGGER.info("get volume");
         mixer = alsaaudio.Mixer("PCM");
         LOGGER.info("Volume = " + str(mixer.getvolume()[0]))
         vol = mixer.getvolume()[0];
@@ -200,9 +201,9 @@ class Player:
         mixer = alsaaudio.Mixer("PCM");
         LOGGER.info("SET Volume = " + str(data['volume']))
         volBase = int(data['volume'])
-        if (volBase > 100)
+        if (volBase > 100):
             volBase = 100
-        if (volBase < 0)
+        if (volBase < 0):
             volBase = 0
         vol = (volBase/2)+50
         mixer.setvolume(vol);
