@@ -193,12 +193,15 @@ class Player:
     def getVolume(self):
         mixer = alsaaudio.Mixer("PCM");
         LOGGER.info("Volume = " + str(mixer.getvolume()[0]))
-        return mixer.getvolume()[0];
+        vol = mixer.getvolume()[0];
+        return ((vol-50)*2)
       
     def setVolume(self, data):
         mixer = alsaaudio.Mixer("PCM");
         LOGGER.info("SET Volume = " + str(data['volume']))
-        mixer.setvolume(int(data['volume']));
+        volBase = int(data['volume'])
+        vol = (volBase/2)+50
+        mixer.setvolume(vol);
         self.rabbitConnection.emit("player:volume:isSet", {"volume": self.getVolume()}, type="server_request")
     
     def init(self):
