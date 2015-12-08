@@ -200,6 +200,10 @@ class Player:
         mixer = alsaaudio.Mixer("PCM");
         LOGGER.info("SET Volume = " + str(data['volume']))
         volBase = int(data['volume'])
+        if (volBase > 100)
+            volBase = 100
+        if (volBase < 0)
+            volBase = 0
         vol = (volBase/2)+50
         mixer.setvolume(vol);
         self.rabbitConnection.emit("player:volume:isSet", {"volume": self.getVolume()}, type="server_request")
