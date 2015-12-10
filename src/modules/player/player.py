@@ -195,7 +195,7 @@ class Player:
         mixer = alsaaudio.Mixer("PCM");
         LOGGER.info("Volume = " + str(mixer.getvolume()[0]))
         vol = mixer.getvolume()[0];
-        return ((vol-50)*2)
+        return vol
       
     def setVolume(self, data):
         mixer = alsaaudio.Mixer("PCM");

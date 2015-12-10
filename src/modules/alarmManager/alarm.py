@@ -139,6 +139,15 @@ class Alarm:
                     alarm = Alarm(data['alarm']['_id'], d, data['alarm']['enable'], data['alarm']['repeat'])
                     Alarm.alarms.append(alarm)
         Sched.scheduler.print_jobs()
+        
+      @staticmethod
+      def getById(id):
+        a = None
+        for alarm in Alarm.alarms:
+          if alarm._id == id:
+            a = alarm
+            break;
+        return a;
       @staticmethod
       def ISO_to_date(isoStr):
           return dateutil.parser.parse(isoStr).astimezone(Alarm.timezone)

@@ -103,11 +103,11 @@ Link.emit = function(message, data) {
 Link.setSocket = function() {
     "use strict";
 	console.log("set socket alarm");
-    Link.app.middleware.socketConnection.socket.on("alarms:update", function(data) {
+    Link.app.middleware.socketConnection.socket.on("alarm:updated", function(data) {
         console.log("alarms");
         console.log(data);
 	    try {
-		    Link.pub.publish(route, JSON.stringify({message: "alarms:update", data: data.alarms}));
+		    Link.pub.publish(route, JSON.stringify({message: "alarm:updated", data: data.alarms}));
 	    } catch(e) {
 		    console.log(e);
 	    }

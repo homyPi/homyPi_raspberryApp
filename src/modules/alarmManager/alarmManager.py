@@ -67,7 +67,7 @@ class AlarmManager:
             });
     def setHandlers(self):
         LOGGER.info("set handlers")
-        self.rabbitConnectionAlarm.addHandler("alarms:update", Alarm.responseToObject)
+        self.rabbitConnectionAlarm.addHandler("alarm:updated", Alarm.responseToObject)
         self.rabbitConnectionAlarm.addHandler("alarms:new", Alarm.responseToObject)
         self.rabbitConnectionAlarm.addHandler("reconnected", self.onSocketReconnect)
 
