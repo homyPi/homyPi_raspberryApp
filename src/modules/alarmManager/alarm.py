@@ -161,6 +161,7 @@ class Alarm:
                  e = True
                  break
           return e
+      @staticmethod
       def getByDate(hours, minutes):
           e = None
           for alarm in Alarm.alarms:
