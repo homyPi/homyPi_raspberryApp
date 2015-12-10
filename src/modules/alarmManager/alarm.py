@@ -128,18 +128,19 @@ class Alarm:
                 if Alarm.name == data["raspberry"]["name"]:
                   hours = data['hours']
                   minutes = data['minutes']
-                  if not Alarm.exist(hours, minutes):
-                      alarm = Alarm(data['_id'], hours, minutes, data['enable'], data['repeat'])
-                      Alarm.alarms.append(alarm)
-                  else:
-                      LOGGER.info("An alarm already exists at " + str(hours) + ":" + str(minutes))
+                  existingAlarm = Alarm.exist(hours, minutes)
+                  if existingAlarm is not None:
+                    LOGGER.info("An alarm already exists at " + str(hours) + ":" + str(minutes) + " => removing it");
+                    Alarm.remove(existingAlarm)
+                  alarm = Alarm(data['_id'], hours, minutes, data['enable'], data['repeat'])
+                  Alarm.alarms.append(alarm)
         except KeyError:
                 d = Alarm.ISO_to_date(data['alarm']['date'])
                 if not Alarm.exist(d):
                     alarm = Alarm(data['alarm']['_id'], d, data['alarm']['enable'], data['alarm']['repeat'])
                     Alarm.alarms.append(alarm)
         Sched.scheduler.print_jobs()
-        
+
       @staticmethod
       def getById(id):
         a = None
@@ -157,6 +158,13 @@ class Alarm:
           for alarm in Alarm.alarms:
               if alarm.hours == hours and alarm.minutes == minutes:
                  e = True
+                 break
+          return e
+      def getByDate(hours, minutes):
+          e = None
+          for alarm in Alarm.alarms:
+              if alarm.hours == hours and alarm.minutes == minutes:
+                 e = alarm
                  break
           return e
       @staticmethod

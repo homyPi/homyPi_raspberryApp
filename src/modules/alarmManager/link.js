@@ -107,7 +107,7 @@ Link.setSocket = function() {
         console.log("alarms");
         console.log(data);
 	    try {
-		    Link.pub.publish(route, JSON.stringify({message: "alarm:updated", data: data.alarms}));
+		    Link.pub.publish(route, JSON.stringify({message: "alarm:updated", data: data.alarm}));
 	    } catch(e) {
 		    console.log(e);
 	    }
