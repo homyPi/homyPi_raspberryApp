@@ -98,7 +98,8 @@ class Alarm:
              self.job = Sched.scheduler.add_job(self.execute, 'date', next_run_time = self.time)
       @staticmethod
       def remove(alarm):
-           if alarm is not None:
+            LOGGER.info("Removing alarm " + str(alarm._id));
+            if alarm is not None:
               if alarm.job is not None:
                   alarm.job.remove()
               Alarm.alarms.remove(alarm)
@@ -128,7 +129,7 @@ class Alarm:
                 if Alarm.name == data["raspberry"]["name"]:
                   hours = data['hours']
                   minutes = data['minutes']
-                  existingAlarm = Alarm.exist(hours, minutes)
+                  existingAlarm = Alarm.getByDate(hours, minutes)
                   if existingAlarm is not None:
                     LOGGER.info("An alarm already exists at " + str(hours) + ":" + str(minutes) + " => removing it");
                     Alarm.remove(existingAlarm)
