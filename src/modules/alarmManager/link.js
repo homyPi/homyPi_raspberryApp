@@ -123,6 +123,16 @@ Link.setSocket = function() {
 	    }
 
     });
+    Link.app.middleware.socketConnection.socket.on("alarm:removed", function(data) {
+        console.log("remove alarm");
+        console.log(data);
+        try {
+            Link.pub.publish(route, JSON.stringify({message: "alarm:removed", data: data}));
+        } catch(e) {
+            console.log(e);
+        }
+
+    });
 };
 
 module.exports = Link;

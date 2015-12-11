@@ -69,6 +69,7 @@ class AlarmManager:
         LOGGER.info("set handlers")
         self.rabbitConnectionAlarm.addHandler("alarm:updated", Alarm.responseToObject)
         self.rabbitConnectionAlarm.addHandler("alarms:new", Alarm.responseToObject)
+        self.rabbitConnectionAlarm.addHandler("alarm:removed", Alarm.removeByData)
         self.rabbitConnectionAlarm.addHandler("reconnected", self.onSocketReconnect)
 
         
