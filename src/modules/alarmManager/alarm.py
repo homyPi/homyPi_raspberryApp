@@ -7,6 +7,9 @@ from hommy_utils import *
 import pytz
 import logging
 
+import os
+path = os.path.dirname(os.path.realpath(__file__))
+
 LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
               '-35s %(lineno) -5d: %(message)s')
 LOGGER = logging.getLogger(__name__)
@@ -141,6 +144,7 @@ class Alarm:
                     alarm = Alarm(data['alarm']['_id'], d, data['alarm']['enable'], data['alarm']['repeat'])
                     Alarm.alarms.append(alarm)
         Sched.scheduler.print_jobs()
+        os.system("mplayer " + path + "/confirm.wav")
 
       @staticmethod
       def getById(id):
