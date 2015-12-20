@@ -100,12 +100,13 @@ class Alarm:
                 self.time = now.replace(hour=self.hours, minute=self.minutes, second=0)
              self.job = Sched.scheduler.add_job(self.execute, 'date', next_run_time = self.time)
       @staticmethod
-      def remove(alarm):
+      def remove(alarm, notify=True):
             LOGGER.info("Removing alarm " + str(alarm._id));
             if alarm is not None:
               if alarm.job is not None:
                   alarm.job.remove()
               Alarm.alarms.remove(alarm)
+              Alarm.notifySuccess("Alarm removed");
       @staticmethod
       def removeByData(data):
           alarmId = data['alarm']['_id'];
@@ -114,37 +115,66 @@ class Alarm:
               if alarmId == a._id:
                  alarm = a
           if alarm != None:
-             alarm.job.remove()
-             Alarm.alarms.remove(alarm)
+            Alarm.alarms.remove(alarm)
+          else:
+            Alarm.notifyError("unknown alarm");
+
+      @staticmethod
+      def setAlarmsFromJSON(items):
+        error = False
+        for data in items:
+          if Alarm.addAlarmsFromJSON(data, False) is None:
+            error = True
+        if error:
+          Alarm.notifyError("Unable to set alarms");
+        else:
+          Alarm.notifySuccess(str(len(items)) + " alarms added");
           
       @staticmethod
-      def responseToObject(alarms):
-        print(str(alarms))
-        print("===============")
-        if not isinstance(alarms, list):
-          if "raspberry" not in alarms or "name" not in alarms["raspberry"]:
-            return
-          if Alarm.name != alarms["raspberry"]["name"]:
-            return;
-          alarms = [alarms]
-        try:
-            for data in alarms:
-                if Alarm.name == data["raspberry"]["name"]:
-                  hours = data['hours']
-                  minutes = data['minutes']
-                  existingAlarm = Alarm.getByDate(hours, minutes)
-                  if existingAlarm is not None:
-                    LOGGER.info("An alarm already exists at " + str(hours) + ":" + str(minutes) + " => removing it");
-                    Alarm.remove(existingAlarm)
-                  alarm = Alarm(data['_id'], hours, minutes, data['enable'], data['repeat'])
-                  Alarm.alarms.append(alarm)
-        except KeyError:
-                d = Alarm.ISO_to_date(data['alarm']['date'])
-                if not Alarm.exist(d):
-                    alarm = Alarm(data['alarm']['_id'], d, data['alarm']['enable'], data['alarm']['repeat'])
-                    Alarm.alarms.append(alarm)
-        Sched.scheduler.print_jobs()
-        os.system("mplayer " + path + "/confirm.wav")
+      def addAlarmsFromJSON(data, notify=True):
+        if "hours" not in data or "minutes" not in data or "_id" not in data:
+          if notify:
+            Alarm.notifyError("invalid alarm");
+          return None;
+        hours = data['hours']
+        minutes = data['minutes']
+        LOGGER.info("new alarm at " + str(hours) + ":" + str(minutes))
+        existingAlarm = Alarm.getByDate(hours, minutes)
+        if existingAlarm is not None:
+          if notify:
+            Alarm.notifySuccess("Alarm at " + str(hours) + ":" + str(minutes) + " already exists")
+          return existingAlarm;
+        else:
+          alarm = Alarm(data['_id'], hours, minutes, data['enable'], data['repeat'])
+          Alarm.alarms.append(alarm)
+          if notify:
+            Alarm.notifySuccess("Alarm added at " + str(hours) + ":" + str(minutes) + "")
+          return alarm;
+
+      @staticmethod
+      def updateAlarmFromJSON(alarm, notify=True):
+        if "_id" not in data:
+          if notify:
+            Alarm.notifyError("invalid alarm's data");
+          return None;
+        existing = Alarm.getById(alarm["_id"])
+        if existing is None:
+          Alarm.notifyError("unknown alarm")
+          return None;
+        else:
+          if existing.job is not None:
+            existing.job.remove()
+            existing.job=None
+          if "hours" in data:
+            existing.hours = data["hours"]
+          if "minutes" in data:
+            existing.minutes = data["minutes"]
+          if "enable" in data:
+            existing.enable = data["enable"]
+          if "repeat" in data:
+            existing.repeat = data["repeat"]
+          existing.schedule();
+          Alarm.notifySuccess("Alarm updated")
 
       @staticmethod
       def getById(id):
@@ -154,17 +184,7 @@ class Alarm:
             a = alarm
             break;
         return a;
-      @staticmethod
-      def ISO_to_date(isoStr):
-          return dateutil.parser.parse(isoStr).astimezone(Alarm.timezone)
-      @staticmethod
-      def exist(hours, minutes):
-          e = False
-          for alarm in Alarm.alarms:
-              if alarm.hours == hours and alarm.minutes == minutes:
-                 e = True
-                 break
-          return e
+        
       @staticmethod
       def getByDate(hours, minutes):
           e = None
@@ -173,18 +193,14 @@ class Alarm:
                  e = alarm
                  break
           return e
+
       @staticmethod
-      def update(data):
-          updated = data['alarm']
-          for alarm in Alarm.alarms:
-              if alarm._id == updated['_id']:
-                 if 'time' in updated:
-                    alarm.time = Alarm.ISO_to_date(updated['time'])
-                 if 'enable' in updated:
-                    alarm.enable = updated['enable']
-                 if 'repeat' in updated:
-                    alarm.repeat = updated['repeat']
-                 alarm.schedule()
+      def notifySuccess(message):
+        LOGGER.info(message);
+        os.system("mplayer " + path + "/confirm.wav")
+      @staticmethod
+      def notifyError(message):
+        LOGGER.error(message);
                  
                
               

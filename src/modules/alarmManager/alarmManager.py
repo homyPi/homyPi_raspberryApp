@@ -36,7 +36,7 @@ class AlarmManager:
         try:
             self.server = ServerRequester("serverRequest.player")
         except:
-            LOGGER.error("alarm module crashed")
+            LOGGER.error("module alarm crashed")
             LOGGER.error(traceback.format_exc())
         Alarm.serverRequester = self.serverHttpRequest
         self.rabbitConnectionAlarm = RabbitConsumer("module.alarm", "module.alarm")
@@ -59,17 +59,25 @@ class AlarmManager:
             sys.exit(0)
     
     def init(self):
-        self.server.emit("alarms:get");
+        LOGGER.info("Ready...")
      
     def onSocketReconnect(self):
         self.server.emit("raspberry:module:new", {
                 "name": "alarm",
                 "status": "PAUSED" 
             });
+        LOGGER.info("Getting alarms api/modules/alarms/raspberries/" + self.name);
+        res = None
+        res = self.serverHttpRequest.get("api/modules/alarms/raspberries/" + self.name);
+        if "status" in res and res["status"] == "success" and "data" in res and "items" in res["data"]:
+            Alarm.setAlarmsFromJSON(res["data"]["items"]);
+        else:
+            LOGGER.info("invalid data");
+
     def setHandlers(self):
         LOGGER.info("set handlers")
-        self.rabbitConnectionAlarm.addHandler("alarm:updated", Alarm.responseToObject)
-        self.rabbitConnectionAlarm.addHandler("alarms:new", Alarm.responseToObject)
+        self.rabbitConnectionAlarm.addHandler("alarm:updated", Alarm.updateAlarmFromJSON)
+        self.rabbitConnectionAlarm.addHandler("alarms:new", Alarm.addAlarmsFromJSON)
         self.rabbitConnectionAlarm.addHandler("alarm:removed", Alarm.removeByData)
         self.rabbitConnectionAlarm.addHandler("reconnected", self.onSocketReconnect)
 
