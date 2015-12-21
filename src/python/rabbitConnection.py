@@ -11,7 +11,7 @@ LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
               '-35s %(lineno) -5d: %(message)s')
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(filename='module.log',level=logging.INFO, format=LOG_FORMAT)
-
+'''
 class RabbitConnection(threading.Thread):
     handlers = []
     def __init__(self, EXCHANGE, ROUTING_KEY, QUEUE = "", exchange_type = "direct"):
@@ -157,3 +157,4 @@ if __name__ == "__main__":
         rabbitConnection.join()
         rabbitConnection.join()
         sys.exit(2)
+'''

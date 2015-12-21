@@ -1,9 +1,9 @@
 var ini = require('node-ini');
-console.log("modules = ",process.env.HOMYPI_MODULES_PATH);
 var socketConnection = require("./node/socketConnection");
 var serverConnection = require("./node/serverConnection");
 var modulesManager = require("./node/modulesManager");
 var serverRequest = require("./node/serverRequest");
+var utils = require("./node/utils");
 
 var ArgumentParser = require('argparse').ArgumentParser;
 var parser = new ArgumentParser({
@@ -58,7 +58,7 @@ function connect() {
     console.log("Starting...");
     var raspInfo = {
         name: app.settings.name,
-        ip : "92.68.1.0",
+        ip : utils.getIpAddr()["wlan0"],
         modules: {}
     }
     app.middleware.socketConnection.connect(raspInfo,
