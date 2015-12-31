@@ -1,13 +1,19 @@
 {
-	modules: [
+	"modules": [
 		{
-			name: "player"
+			"name": "notifier"
 		},
 		{
-			name: "alarm"
+			"name": "ttsxNotifier"
 		},
 		{
-			name: "spotify"
+			"name": "alarmManager"
+		},
+		{
+			"name": "player"
+		},
+		{
+			"name": "spotify"
 		}
 	]
 }

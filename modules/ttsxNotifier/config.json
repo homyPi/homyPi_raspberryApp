@@ -1,0 +1,4 @@
+{
+	"name": "speaking_logger",
+	"require": "notifier"
+}

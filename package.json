@@ -14,6 +14,7 @@
     "bluebird": "^2.9.34",
     "lodash": "^3.10.1",
     "node-ini": "^1.0.0",
+    "pidlock": "^0.1.0",
     "ps-node": "0.0.4",
     "rabbit.js": "^0.4.4",
     "request": "^2.61.0",

@@ -37,90 +37,109 @@ if (!config.Server.url || !config.Server.username || !config.Server.password) {
 	console.log("invalid config file");
 	process.exit(2);
 }
-var app = {
-    settings: {
-        host: config.Server.url,
-        username: config.Server.username,
-        password: config.Server.password,
-        name: config.Server.name
-    },
-    args: args,
-    middleware: {}
-};
-socketConnection(app);
-serverConnection(app);
-modulesManager(app);
-checkConfig(config);
+var app = {};
+
+function run() {
+    app = {
+        settings: {
+            host: config.Server.url,
+            username: config.Server.username,
+            password: config.Server.password,
+            name: config.Server.name
+        },
+        args: args,
+        middleware: {}
+    };
+    socketConnection(app);
+    serverConnection(app);
+    modulesManager(app);
+    checkConfig(config);
 
 
-function connect() {
-    "use strict";
-    console.log("Starting...");
-    var raspInfo = {
-        name: app.settings.name,
-        ip : utils.getIpAddr()["wlan0"],
-        modules: {}
+    function connect() {
+        "use strict";
+        console.log("Starting...");
+        var raspInfo = {
+            name: app.settings.name,
+            ip : utils.getIpAddr()["wlan0"],
+            modules: {}
+        }
+        app.middleware.socketConnection.connect(raspInfo,
+            function(token, reconnection) {
+                console.log("callback");
+                if (!reconnection) {
+                    serverRequest(app);
+                    app.middleware.modulesManager.setSockets();
+                    app.middleware.modulesManager.runModules();
+                } else {
+                    try {
+                    app.middleware.modulesManager.socketReconnected();
+                }catch(e) {console.log(e);}
+                }
+            });
     }
-    app.middleware.socketConnection.connect(raspInfo,
-        function(token, reconnection) {
-            console.log("callback");
-            if (!reconnection) {
-                serverRequest(app);
-                app.middleware.modulesManager.setSockets();
-                app.middleware.modulesManager.runModules();
-            } else {
-                try {
-                app.middleware.modulesManager.socketReconnected();
-            }catch(e) {console.log(e);}
-            }
-        });
+    function stop(err, status){
+        console.log({error: err, status: status});
+        process.stdin.resume();
+        app.middleware.modulesManager.killAll();
+        process.exit(2);
+    };
+    function checkConfig(config) {
+        if (!config) {
+            stop("Missing configs", "exit");
+            return;
+        }
+        if (!config.Server) {
+            stop("Missing serveur configs", "exit");
+            return;
+        }
+        if (!config.Server.username) {
+            stop("Missing field username in configs", "exit");
+            return;
+        }
+        if (!config.Server.password) {
+            stop("Missing field password in configs", "exit");
+            return;
+        }
+        if (!config.Server.name) {
+            stop("Missing field name in configs", "exit");
+            return;
+        }
+        if (!config.Server) {
+            stop("Missing field in configs", "exit");
+            return;
+        }
+    }
+
+    process.on('exit', function() {
+        stop(null, "exit");
+    });
+    process.on('SIGINT', function() {
+        stop(null, "SIGINT");
+    });
+    var err = app.middleware.modulesManager.setupModules(app);
+    if (err) {
+        console.log(err);
+        stop(err);
+    }
+
+    connect();
 }
-function stop(err, status){
-	console.log({error: err, status: status});
-	process.stdin.resume();
-	app.middleware.modulesManager.killAll();
-	process.exit(2);
-};
-function checkConfig(config) {
-    if (!config) {
-        stop("Missing configs", "exit");
-        return;
-    }
-    if (!config.Server) {
-        stop("Missing serveur configs", "exit");
-        return;
-    }
-    if (!config.Server.username) {
-        stop("Missing field username in configs", "exit");
-        return;
-    }
-    if (!config.Server.password) {
-        stop("Missing field password in configs", "exit");
-        return;
-    }
-    if (!config.Server.name) {
-        stop("Missing field name in configs", "exit");
-        return;
-    }
-    if (!config.Server) {
-        stop("Missing field in configs", "exit");
-        return;
-    }
-}
 
-process.on('exit', function() {
-	stop(null, "exit");
+
+
+
+var pidlock = require('pidlock');
+pidlock.guard('/tmp', 'homyPi_RaspberryApp', function(error, data, cleanup) {
+  if (!error) {
+    run();
+  } else {
+    console.log("Already running")
+    process.exit(-1);
+  }
 });
-process.on('SIGINT', function() {
-	stop(null, "SIGINT");
-});
-var err = app.middleware.modulesManager.setupModules(app);
-if (err) {
-	console.log(err);
-	stop(err);
-}
 
-connect();
+
 
 
 module.exports = app;

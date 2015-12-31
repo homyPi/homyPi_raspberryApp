@@ -11,12 +11,22 @@ class DynamicModule:
 				path: path of the file containing the module
 			}
 		"""
-		self.modules = modules;
-
+		self.modules = []
+		if modules is None:
+			modules = []
+		print "==================="
+		print str(len(modules))
+		print "==================="
+		for module in modules:
+			print str(module)
+			if "moduleName" in module and "path" in module and "className" in module:
+				self.modules.append(module)
+			else:
+				print "invalid module"
 
 	def load(self):
 		"""
-		will load the module class and put it in module.class
+		will load the modules classes and put it in module.class
 		return: modules list
 		"""
 		for module in self.modules:

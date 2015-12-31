@@ -6,7 +6,7 @@ var MODULES_PATH = process.env.HOMYPI_MODULES_PATH;
 
 module.exports = function(app) {
 	"use strict";
-	var modulesName = fs.readdirSync(MODULES_PATH);
+	var modulesConfig = require("../../config.json").modules;
 	var modules = [];
 	var route = "module.*";
 	var context = require('rabbit.js').createContext();
@@ -45,8 +45,10 @@ module.exports = function(app) {
 	var setupModules = function() {
 		var error = null;
 		console.log(app.args.modules);
-		_.forEach(modulesName, function(name) {
+		_.forEach(modulesConfig, function(conf) {
+			var name = conf.name;
 			var ignore = false;
+			var missing = false;
 			if (app.args.modules) {
 				ignore = (app.args.modules.indexOf(name) === -1);
 			}
@@ -59,8 +61,8 @@ module.exports = function(app) {
 					m = require(linkPath);
 					m.config = require(configPath);
 				} catch(e) {
-					error = e;
-					return false;
+					console.log(e.stack);
+					return;
 				}
 				console.log("init " + name);
 				m.init(app, modules);
