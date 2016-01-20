@@ -4,7 +4,7 @@ pythonModulesPath = os.getenv('HOMYPI_PYTHON_MODULES');
 sys.path.append( pythonModulesPath )
 import dateutil.parser
 import datetime
-from sched import Sched
+from scheduler import Sched
 from hommy_utils import *
 import pytz
 import logging

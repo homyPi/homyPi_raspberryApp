@@ -67,6 +67,6 @@ class ServerRequester(RabbitEmitter):
                 if type is not None:
                     body = json.dumps({"message": message,"data": data, "type": type})
                 else:
-                    body = json.dumps({"message": message,"data": data})
+                    body = json.dumps({"message": message,"data": data});
             message = rabbitpy.Message(channel, body);
             message.publish(self.EXCHANGE, self.ROUTING_KEY)

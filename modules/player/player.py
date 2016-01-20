@@ -26,6 +26,7 @@ import time
 import traceback
 import signal
 import setproctitle
+from scheduler import Sched
 LOGGER.info("imports ready")
 
 queue_name = "player"
@@ -69,7 +70,14 @@ class Player:
         if self.job is not None:
             self.job.remove()
             self.job = None;
-        self.job = sched.add_job(self.sendProgress, "interval", seconds=5)
+        try:
+            LOGGER.info("setSendProgressJob => create job")
+            self.job = Sched.scheduler.add_job(self.sendProgress, "interval", seconds=5)
+        except e:
+            LOGGER.error("error")
+            LOGGER.error(traceback.format_exc())
+        
+        LOGGER.info("setSendProgressJob => job created, sending progress")
         self.sendProgress();
 
     def onSocketReconnect(self):
@@ -101,8 +109,8 @@ class Player:
                 if self.spotifyPlayer.play(track) is False:
                     self.next();
                 else:
-                    self.setSendProgressJob()
                     self.server.emit("player:status", {"player": {"name": self.name, }, 'status':'PLAYING', "playingId": track._id})
+                    self.setSendProgressJob()
         else:
             if self.job is not None:
                 self.job.remove()
@@ -117,13 +125,14 @@ class Player:
             
 
     def resume(self):
-        LOGGER.info("next track = " + str(self.spotifyPlayer.currentTrack));
+        LOGGER.info("curent track = " + str(self.spotifyPlayer.currentTrack));
         if self.spotifyPlayer.currentTrack is None:
             self.play()
         else:
             self.spotifyPlayer.resume()
-            self.setSendProgressJob()
+            LOGGER.info("emit 'player:status' => 'PLAYING'")
             self.server.emit("player:status", {'status':'PLAYING'})
+            self.setSendProgressJob()
     def pause(self):
         self.spotifyPlayer.pause()
         if self.job is not None:
@@ -209,7 +218,7 @@ class Player:
             self.playListSet(res["playlist"], True)
 
     def sendProgress(self):
-        print(str(self.spotifyPlayer.position))
+        LOGGER.info("new progress = " + str(self.spotifyPlayer.position))
         self.server.emit("playlist:track:progress", {"progress": self.spotifyPlayer.position})
     def seek(self, data):
         if "progress_ms" in data:
