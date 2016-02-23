@@ -1,268 +1,84 @@
-#!/usr/bin/env python
-#
 import logging
 LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
               '-35s %(lineno) -5d: %(message)s')
 LOGGER = logging.getLogger(__name__)
-logging.basicConfig(filename='module.log',level=logging.DEBUG, format=LOG_FORMAT)
+logging.basicConfig(filename='module.log',level=logging.INFO, format=LOG_FORMAT)
 
-import pika
-import sys
-import argparse
-import os
-pythonModulesPath = os.getenv('HOMYPI_PYTHON_MODULES');
-sys.path.append( pythonModulesPath )
-from rabbitConsumer import RabbitConsumer
-from rabbitEmitter import RabbitEmitter, ServerRequester
-from spotify_player import SpotifyPlayer
-from playerClasses import Track, Playlist
-from serverHttpRequest import ServerHttpRequest
-from dynamicModule import DynamicModule
-import alsaaudio
-from os.path import expanduser
-from ConfigParser import SafeConfigParser
-import json
-import time
-import traceback
-import signal
-import setproctitle
-from scheduler import Sched
-LOGGER.info("imports ready")
+from playlist import Playlist
 
-queue_name = "player"
 class Player:
-    spotifyPlayer = None
-    def __init__(self, config, playersConfig):
-        LOGGER.info("__init__ player")
-        self.rabbitConnection = None
-        self.moduleLoader = DynamicModule(playersConfig)
-        self.players = self.moduleLoader.load()
-        self.playlist = Playlist(config.get("Server", "name"))
-        self.job = None;
-        self.name = config.get("Server", "name")
-        self.serverHttpRequest = ServerHttpRequest(config.get("Server", "url"),
-                                                   config.get("Server", "username"),
-                                                   config.get("Server", "password"))
-        Playlist.serverHttpRequest = self.serverHttpRequest;
-        signal.signal(signal.SIGINT, self.stopApp)
-        LOGGER.info("starting player module")
-        self.server = ServerRequester("serverRequest.player")
-        self.rabbitConnection = RabbitConsumer("module.player", "module.player")
-        Playlist.rabbitConnection = self.server;
-        try:
-            for p in players:
-                self.spotifyPlayer = p["class"](config, self.next)
-            print("starting spotify player")
-            self.setHandlers()
-            self.rabbitConnection.onConnected(self.init)
-            self.rabbitConnection.start()
-            self.onSocketReconnect();
-        
-            while True:
-                  time.sleep(0.2)
-        except KeyboardInterrupt, SystemExit:
-            self.stopApp()
-        except:
-            LOGGER.error("player module crashed")
-            LOGGER.error(traceback.format_exc())
-            self.stopApp()
-    def setSendProgressJob(self):
-        if self.job is not None:
-            self.job.remove()
-            self.job = None;
-        try:
-            LOGGER.info("setSendProgressJob => create job")
-            self.job = Sched.scheduler.add_job(self.sendProgress, "interval", seconds=5)
-        except e:
-            LOGGER.error("error")
-            LOGGER.error(traceback.format_exc())
-        
-        LOGGER.info("setSendProgressJob => job created, sending progress")
-        self.sendProgress();
+	def __init__(self, playerManager):
+		self.playerManager = playerManager
+		self.name = playerManager.name
+		self.playerModules = dict();
+		for moduleClass in playerManager.modules:
+			print "loading player module " + moduleClass["moduleName"]
+			self.playerModules[moduleClass["moduleName"]] = moduleClass["class"](playerManager.config, self.next)
+		self.playlist = Playlist(playerManager.config.get("Server", "name"), playerManager.serverHttpRequest);
+		self.currentPlayer = None;
+		self.job = None
 
-    def onSocketReconnect(self):
-        self.server.emit("raspberry:module:new", {
-                "name": "music",
-                "status": "PAUSED",
-                "volume": self.getVolume()
-            });
+	def getPlayer(self, name):
+		LOGGER.info("getting player " + name)
+		return self.playerModules[name]
 
-    def stopApp(self, arg1=None, arg2=None):
-        try:
-            if self.spotifyPlayer is not None:
-                self.spotifyPlayer.exit()
-            if self.rabbitConnection is not None:
-                self.rabbitConnection.stop()
-                self.rabbitConnection.join()
-            if self.job is not None:
-                self.job.remove()
-        except:
-            LOGGER.error(traceback.format_exc())
-        sys.exit(0)
-            
-    def play(self, track=None):
-        if track is None:
-            track = self.playlist.get()
-        if track is not None:
-            LOGGER.info("playing " + track.uri)
-            if track.source == "spotify":
-                if self.spotifyPlayer.play(track) is False:
-                    self.next();
-                else:
-                    self.server.emit("player:status", {"player": {"name": self.name, }, 'status':'PLAYING', "playingId": track._id})
-                    self.setSendProgressJob()
-        else:
-            if self.job is not None:
-                self.job.remove()
-            self.server.emit("player:status", {'status':"PAUSED"})
-            LOGGER.info("playlist empty")
-    def playTrackFromRequest(self, data):
-        if "source" in data and "uri" in data:
-            self.playlist.clear()
-            LOGGER.info(str(data));
-            self.playlist.add(Track(data["source"], data["uri"]))
-            self.play()
-            
+	def switchPlayer(self, name):
+		next = self.getPlayer(name)
+		if self.currentPlayer is None or next != self.currentPlayer:
+			if self.currentPlayer is not None:
+				self.currentPlayer.pause()
+			self.currentPlayer = next
 
-    def resume(self):
-        LOGGER.info("curent track = " + str(self.spotifyPlayer.currentTrack));
-        if self.spotifyPlayer.currentTrack is None:
-            self.play()
-        else:
-            self.spotifyPlayer.resume()
-            LOGGER.info("emit 'player:status' => 'PLAYING'")
-            self.server.emit("player:status", {'status':'PLAYING'})
-            self.setSendProgressJob()
-    def pause(self):
-        self.spotifyPlayer.pause()
-        if self.job is not None:
-            self.job.remove()
-        self.server.emit("player:status", {'status':"PAUSED"})
-    def next(self):
-        next = self.playlist.next();
-        if next is None:
-            LOGGER.info("Nothing after")
-            self.pause()
-            return None
-        else:
-            LOGGER.info("playing next")
-            self.play(next)
-            return next;
-    def previous(self):
-        previous = self.playlist.previous();
-        if previous is not None:
-            self.play(previous)
-        else:
-            self.pause()
-    def playIdInPlaylist(self, data):
-        self.spotifyPlayer.playIdInPlaylist(data)
-    def playListAdd(self, data, fromDB=False):
-        LOGGER.info(str(data))
-        if "track" in data:
-            if "source" in data["track"] and "uri" in data["track"]:
-                self.playlist.add(Track(data["track"]["source"], data["track"]["uri"], data["track"].get("_id"), data["track"].get("name")), fromDB)
-        elif "trackset" in data:
-            for track in data["trackset"]:
-                self.playlist.add(Track(track["source"], track["uri"], data["track"].get("_id"), data["track"].get("name")), fromDB)
-
-    def playListSet(self, data, fromDb=False):
-        LOGGER.info("set playlist: " + str(data.get("tracks")))
-        LOGGER.info("from DB = " + str(fromDb))
-        self.playlist.clear(fromDb);
-        LOGGER.info("data = " + str(data));
-        trackList = [];
-        for track in data.get("trackset", []):
-            if "source" in track and "uri" in track:
-                LOGGER.info("adding " + str(track["uri"]) + "   _id=" + str(track.get("_id")))
-                trackList.append(Track(track["source"], track["uri"], track.get("_id"), track.get("name")))
-            else:
-                LOGGER.warn("missing source or uri in: " + str(track))
-        self.playlist.concat(trackList, fromDb);
-        if not fromDb:    
-            self.play();
-
-    def removeInPlaylist(self, data):
-        LOGGER.info("Remove in playlist: " + str(data));
-        if "_id" in data:
-            self.playlist.removeById(data["_id"])
-        elif "key" in data:
-            self.playlist.remove(data["key"])
-    def playListLoad(self, data):
-        self.spotifyPlayer.playListLoad(data)
-    def play_local(self):
-        print("local")
-    def getVolume(self):
-        LOGGER.info("get volume");
-        mixer = alsaaudio.Mixer("PCM");
-        LOGGER.info("Volume = " + str(mixer.getvolume()[0]))
-        vol = mixer.getvolume()[0];
-        return vol
-      
-    def setVolume(self, data):
-        mixer = alsaaudio.Mixer("PCM");
-        LOGGER.info("SET Volume = " + str(data['volume']))
-        volBase = int(data['volume'])
-        if (volBase > 100):
-            volBase = 100
-        if (volBase < 0):
-            volBase = 0
-        vol = (volBase/2)+50
-        mixer.setvolume(vol);
-        self.rabbitConnection.emit("player:volume:isSet", {"volume": self.getVolume()}, type="server_request")
-    
-    def init(self):
-        LOGGER.info("inititalize player data")
-        res = self.serverHttpRequest.get("api/modules/music/playlists/" + self.name);
-        LOGGER.info("Got playlist: " + str(res));
-        if "playlist" in res and "trackset" in res["playlist"]:
-            self.playListSet(res["playlist"], True)
-
-    def sendProgress(self):
-        LOGGER.info("new progress = " + str(self.spotifyPlayer.position))
-        self.server.emit("playlist:track:progress", {"progress": self.spotifyPlayer.position})
-    def seek(self, data):
-        if "progress_ms" in data:
-            self.spotifyPlayer.seek(data["progress_ms"])
-            self.sendProgress()
-    def setHandlers(self):
-        LOGGER.info("set handlers")
-        self.rabbitConnection.addHandler("playTrack", self.playTrackFromRequest)
-        self.rabbitConnection.addHandler("resume", self.resume)
-        self.rabbitConnection.addHandler("pause", self.pause)
-        self.rabbitConnection.addHandler("next", self.next)
-        self.rabbitConnection.addHandler("previous", self.previous)
-        self.rabbitConnection.addHandler("playIdInPlaylist", self.playIdInPlaylist)
-        self.rabbitConnection.addHandler("playListAdd", self.playListAdd)
-        self.rabbitConnection.addHandler("playListSet", self.playListSet)
-        self.rabbitConnection.addHandler("removeInPlaylist", self.removeInPlaylist)
-        self.rabbitConnection.addHandler("setVolume", self.setVolume)
-        self.rabbitConnection.addHandler("getVolume", self.getVolume)
-        self.rabbitConnection.addHandler("setVolume", self.setVolume)
-        self.rabbitConnection.addHandler("seek", self.seek)
-        self.rabbitConnection.addHandler("reconnected", self.onSocketReconnect)
+	def play(self, track=None):
+		track = track or self.playlist.get()
+		if track is not None:
+			LOGGER.info("playing (name: " + str(track.name) + ", uri: " + str(track.uri) + ") on: " + track.source)
+			self.switchPlayer(track.source)
+			if self.currentPlayer.play(track) is False:
+				self.next();
+			else:
+				self.playerManager.server.emit("player:status", {'status':'PLAYING', "playingId": track._id, "track": track.jsonFull})
+				#self.setSendProgressJob()
+		else:
+			if self.job is not None:
+				self.job.remove()
+			self.playerManager.server.emit("player:status", {'status':"PAUSED"})
+			LOGGER.info("playlist empty")
 
 
-if __name__ == '__main__':
-    LOGGER.info("Starting player module")  
-    setproctitle.setproctitle("homyPi_player")
-    parser = argparse.ArgumentParser(description='Client for the HAPI server')
-    parser.add_argument('--conf', help='Path to the configuration file')
-    parser.add_argument('--players', help='Players')
-    args = parser.parse_args()
-    confPath = expanduser("~") + '/.hommyPi_conf'
-    LOGGER.info("Checking args")
-    try:
-        if args.conf is not None:
-           confPath = args.conf
-        if args.players is not None:
-            LOGGER.info(args.players)
-            players = json.loads(args.players);
-        else:
-            players = [];
-    except:
-        LOGGER.error("player module crashed")
-        LOGGER.error(traceback.format_exc())
-    LOGGER.info("Checking config")
-    config = SafeConfigParser()
-    config.read(confPath)
-    player = Player(config, players);
+	def resume(self):
+		LOGGER.info("curent track = " + str(self.currentPlayer.currentTrack));
+		if self.currentPlayer.currentTrack is None:
+			self.play()
+		else:
+			self.currentPlayer.resume()
+			LOGGER.info("emit 'player:status' => 'PLAYING'")
+			self.playerManager.server.emit("player:status", {'status':'PLAYING'})
+			self.setSendProgressJob()
+
+
+	def pause(self):
+		self.currentPlayer.pause()
+		if self.job is not None:
+			self.job.remove()
+		self.playerManager.server.emit("player:status", {'status':"PAUSED"})
+
+
+	def next(self):
+		next = self.playlist.next();
+		if next is None:
+			LOGGER.info("Nothing after")
+			self.pause()
+			return None
+		else:
+			LOGGER.info("playing next")
+			self.play(next)
+			return next;
+
+
+	def previous(self):
+		previous = self.playlist.previous();
+		if previous is not None:
+			self.play(previous)
+		else:
+			self.pause()

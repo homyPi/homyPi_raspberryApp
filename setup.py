@@ -15,6 +15,7 @@ setup(name='hommyPi_raspberryApp',
           'python-dateutil',
           'apscheduler',
           'requests',
-          'setproctitle'
+          'setproctitle',
+	  'pyttsx'
           ],
       zip_safe=False)

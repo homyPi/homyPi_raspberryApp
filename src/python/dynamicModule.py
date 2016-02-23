@@ -35,3 +35,10 @@ class DynamicModule:
 			cls = getattr(foo, module["className"])
 			module["class"] = cls
 		return self.modules
+
+	def getClass(self, moduleName):
+		for module in self.modules:
+			if module["moduleName"] == moduleName:
+				return module["class"]
+
+		return None;

@@ -1,5 +1,4 @@
-var io = require('socket.io-client');
-
+var MQTT = require("./mqtt");
 
 
 module.exports = function(app) {
@@ -9,26 +8,10 @@ module.exports = function(app) {
     var connect = function(raspInfo, callback) {
         app.middleware.serverConnection.connectionToken().then(
             function(token) {
-                console.log("creating socket");
-                socket = io.connect(app.settings.host, {
-                    'query' : 'token=' + token + "&info=" + JSON.stringify(raspInfo)
-                });
-                socket.on('connect', function() {
-                    console.log("connected");
-                    app.middleware.socketConnection.socket = socket;
+                var mqtt = new MQTT(raspInfo.name);
+                mqtt.start(token, function(token, wasConnected) {
+                    app.middleware.socketConnection.socket = mqtt;
                     callback(token, wasConnected);
-                    wasConnected = true;
-                });
-                socket.on("error", function(error) {
-                    console.log(error);
-                    if (error.type === "UnauthorizedError" || error.code === "invalid_token") {
-                        reconnect(callback);
-                    } else {
-                        console.log(error);
-                    }
-                });
-                socket.on('disconnect', function() {
-                    console.log("disconnected");
                 });
             });
     };

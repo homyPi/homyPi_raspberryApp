@@ -1,0 +1,242 @@
+#!/usr/bin/env python
+#
+import logging
+LOG_FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
+              '-35s %(lineno) -5d: %(message)s')
+LOGGER = logging.getLogger(__name__)
+logging.basicConfig(filename='module.log',level=logging.INFO, format=LOG_FORMAT)
+
+import pika
+import sys
+import argparse
+import os
+pythonModulesPath = os.getenv('HOMYPI_PYTHON_MODULES');
+sys.path.append( pythonModulesPath )
+from rabbitConsumer import RabbitConsumer
+from rabbitEmitter import RabbitEmitter, ServerRequester
+from spotify_player import SpotifyPlayer
+from player import Player
+from playlist import Track, Album, Playlist
+from serverHttpRequest import ServerHttpRequest
+from dynamicModule import DynamicModule
+import alsaaudio
+from os.path import expanduser
+from ConfigParser import SafeConfigParser
+import json
+import time
+import traceback
+import signal
+import setproctitle
+from scheduler import Sched
+LOGGER.info("imports ready")
+
+queue_name = "player"
+class PlayerManager:
+    spotifyPlayer = None
+    def __init__(self, config, playersConfig):
+        LOGGER.info("__init__ player")
+        PlayerManager.config = config
+        self.rabbitConnection = None
+        self.name = config.get("Server", "name")
+        self.serverHttpRequest = ServerHttpRequest(config.get("Server", "url"),
+                                                   config.get("Server", "username"),
+                                                   config.get("Server", "password"))
+        Playlist.serverHttpRequest = self.serverHttpRequest;
+        LOGGER.info("=====================+++>" + str(Playlist.serverHttpRequest))
+        self.modules = DynamicModule(playersConfig).load()
+        #self.players = self.moduleLoader.load()
+        self.player = Player(self)
+        self.job = None;
+        signal.signal(signal.SIGINT, self.stopApp)
+        LOGGER.info("starting player module")
+        self.server = ServerRequester("serverRequest.player")
+        self.rabbitConnection = RabbitConsumer("module.player", "module.player")
+        Playlist.rabbitConnection = self.server;
+        try:
+            #for p in players:
+            #    self.spotifyPlayer = p["class"](config, self.next)
+            print("starting spotify player")
+            self.setHandlers()
+            self.rabbitConnection.onConnected(self.init)
+            self.rabbitConnection.start()
+            self.onSocketReconnect();
+        
+            while True:
+                  time.sleep(0.2)
+        except KeyboardInterrupt, SystemExit:
+            self.stopApp()
+        except:
+            LOGGER.error("player module crashed")
+            LOGGER.error(traceback.format_exc())
+            self.stopApp()
+    def setSendProgressJob(self):
+        if self.job is not None:
+            self.job.remove()
+            self.job = None;
+        try:
+            LOGGER.info("setSendProgressJob => create job")
+            self.job = Sched.scheduler.add_job(self.sendProgress, "interval", seconds=5)
+        except e:
+            LOGGER.error("error")
+            LOGGER.error(traceback.format_exc())
+        
+        LOGGER.info("setSendProgressJob => job created, sending progress")
+        self.sendProgress();
+
+    def onSocketReconnect(self):
+        self.server.emit("raspberry:module:new", {
+                "name": "music",
+                "status": "PAUSED",
+                "volume": self.getVolume()
+            });
+
+    def stopApp(self, arg1=None, arg2=None):
+        try:
+            if self.spotifyPlayer is not None:
+                self.spotifyPlayer.exit()
+            if self.rabbitConnection is not None:
+                self.rabbitConnection.stop()
+                self.rabbitConnection.join()
+            if self.job is not None:
+                self.job.remove()
+        except:
+            LOGGER.error(traceback.format_exc())
+        sys.exit(0)
+            
+    def play(self, data=None):
+        LOGGER.info("play========>" + str(data));
+        if "source" in data:
+            obj = False
+            #self.player.playlist.clear()
+            if "track" in data:
+                success = self.player.playlist.set(Track(data["source"], data["track"]["uri"], data["track"]["serviceId"]))
+            elif "album" in data:
+                if "startAtTrack" in data:
+                    success = self.player.playlist.set(Album(data["source"], data["album"]["uri"], data["album"]["serviceId"]), startAtTrack=data["startAtTrack"])
+                else:
+                    success = self.player.playlist.set(Album(data["source"], data["album"]["uri"], data["album"]["serviceId"]))
+
+            if success:
+                self.player.play();
+
+
+    def playTrackFromRequest(self, data):
+        if "source" in data and "uri" in data:
+            self.player.playlist.clear()
+            LOGGER.info(str(data));
+            self.player.playlist.add(Track(data["source"], data["uri"]))
+            self.player.play()
+            
+
+    def playIdInPlaylist(self, data):
+        self.spotifyPlayer.playIdInPlaylist(data)
+    def playListAdd(self, data, fromDB=False):
+        LOGGER.info(str(data))
+        if "track" in data:
+            if "source" in data["track"] and "uri" in data["track"]:
+                self.player.playlist.add(Track(data["track"]["source"], data["track"]["uri"], data["track"].get("_id"), data["track"].get("name")), fromDB)
+        elif "trackset" in data:
+            for track in data["trackset"]:
+                self.player.playlist.add(Track(track["source"], track["uri"], data["track"].get("_id"), data["track"].get("name")), fromDB)
+
+    def playListSet(self, data, fromDb=False):
+        LOGGER.info("set playlist: " + str(data.get("tracks")))
+        LOGGER.info("from DB = " + str(fromDb))
+        self.player.playlist.clear(fromDb);
+        LOGGER.info("data = " + str(data));
+        trackList = [];
+        for track in data.get("tracks", []):
+            if "source" in track and "uri" in track:
+                LOGGER.info("adding " + str(track["uri"]) + "   _id=" + str(track.get("_id")))
+                trackList.append(Track(track["source"], track["uri"], track.get("_id"), track.get("name")))
+            else:
+                LOGGER.warn("missing source or uri in: " + str(track))
+        self.player.playlist.concat(trackList, fromDb);
+        if not fromDb:    
+            self.player.play();
+
+    def removeInPlaylist(self, data):
+        LOGGER.info("Remove in playlist: " + str(data));
+        if "_id" in data:
+            self.player.playlist.removeById(data["_id"])
+        elif "key" in data:
+            self.player.playlist.remove(data["key"])
+    def playListLoad(self, data):
+        self.spotifyPlayer.playListLoad(data)
+    def play_local(self):
+        print("local")
+    def getVolume(self):
+        LOGGER.info("get volume");
+        mixer = alsaaudio.Mixer("PCM");
+        LOGGER.info("Volume = " + str(mixer.getvolume()[0]))
+        vol = mixer.getvolume()[0];
+        return vol
+      
+    def setVolume(self, data):
+        mixer = alsaaudio.Mixer("PCM");
+        LOGGER.info("SET Volume = " + str(data['volume']))
+        volBase = int(data['volume'])
+        if (volBase > 100):
+            volBase = 100
+        if (volBase < 0):
+            volBase = 0
+        vol = (volBase/2)+50
+        mixer.setvolume(vol);
+        self.rabbitConnection.emit("player:volume:isSet", {"volume": self.getVolume()}, type="server_request")
+    
+    def init(self):
+        LOGGER.info("inititalize player data")
+        res = self.serverHttpRequest.get("api/modules/music/playlists/" + self.name);
+        LOGGER.info("Got playlist: " + str(res));
+        if "playlist" in res and "tracks" in res["playlist"]:
+            self.playListSet(res["playlist"], True)
+
+    def sendProgress(self):
+        LOGGER.info("new progress = " + str(self.spotifyPlayer.position))
+        self.server.emit("playlist:track:progress", {"progress": self.spotifyPlayer.position})
+    def seek(self, data):
+        if "progress_ms" in data:
+            self.spotifyPlayer.seek(data["progress_ms"])
+            self.sendProgress()
+    def setHandlers(self):
+        LOGGER.info("set handlers")
+        self.rabbitConnection.addHandler("playTrack", self.play)
+        self.rabbitConnection.addHandler("resume", self.player.resume)
+        self.rabbitConnection.addHandler("pause", self.player.pause)
+        self.rabbitConnection.addHandler("next", self.player.next)
+        self.rabbitConnection.addHandler("previous", self.player.previous)
+        self.rabbitConnection.addHandler("playIdInPlaylist", self.playIdInPlaylist)
+        self.rabbitConnection.addHandler("playListAdd", self.playListAdd)
+        self.rabbitConnection.addHandler("playListSet", self.playListSet)
+        self.rabbitConnection.addHandler("removeInPlaylist", self.removeInPlaylist)
+        self.rabbitConnection.addHandler("setVolume", self.setVolume)
+        self.rabbitConnection.addHandler("getVolume", self.getVolume)
+        self.rabbitConnection.addHandler("setVolume", self.setVolume)
+        self.rabbitConnection.addHandler("seek", self.seek)
+        self.rabbitConnection.addHandler("reconnected", self.onSocketReconnect)
+
+
+if __name__ == '__main__':
+    LOGGER.info("Starting player module")  
+    setproctitle.setproctitle("homyPi_player")
+    parser = argparse.ArgumentParser(description='Client for the HAPI server')
+    parser.add_argument('--conf', help='Path to the configuration file')
+    parser.add_argument('--players', help='Players')
+    args = parser.parse_args()
+    confPath = expanduser("~") + '/.hommyPi_conf'
+    LOGGER.info("Checking args")
+    try:
+        if args.conf is not None:
+           confPath = args.conf
+        if args.players is not None:
+            LOGGER.info(args.players)
+            players = json.loads(args.players);
+        else:
+            players = [];
+    except:
+        LOGGER.error("player module crashed")
+        LOGGER.error(traceback.format_exc())
+    LOGGER.info("Checking config")
+    config = SafeConfigParser()
+    config.read(confPath)
+    playerManager = PlayerManager(config, players);

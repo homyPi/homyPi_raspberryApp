@@ -59,7 +59,7 @@ Link.runModule = function() {
             console.log("stating player.py --players '" + playersStr + "'");
             var child = require('child_process').spawn(
     	        'python',
-                [ "./player.py", "--players", "" + playersStr + ""],
+                [ "./playerManager.py", "--players", "" + playersStr + ""],
     	        {cwd: __dirname}
             );
             child.on('close', function(code) {

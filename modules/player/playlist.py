@@ -9,19 +9,31 @@ class Artist:
 	def __init__(self, name, uri):
 		self.uri = uri
 		self.name = name
+class Album:
+	def __init__(self, source, uri, serviceId, _id=None,  name=None):
+		self.source = source
+		self.uri = uri
+		self.serviceId = serviceId,
+		self._id = _id
+		self.name = name
 class Track:
-	def __init__(self, source, uri, _id=None,  name=None, artists=None):
+	def __init__(self, source, uri, serviceId, _id=None, name=None, jsonFull=None):
 		self._id=_id
+		self.serviceId = serviceId
 		self.source = source;
 		self.uri = uri;
 		self.name = name;
-		self.artists = artists
+		self.jsonFull = jsonFull;
+
+		
 
 class Playlist:
 	rabbitConnection = None;
 	serverHttpRequest = None;
+
 	playerName = ""
-	def __init__(self, playerName, tracks=[]):
+	def __init__(self, playerName, serverHttpRequest, tracks=[]):
+		self.serverHttpRequest = serverHttpRequest
 		self.playerName = playerName;
 		self.tracks = tracks;
 		self.setCurrent(0);
@@ -30,14 +42,41 @@ class Playlist:
 		self.tracks.append(track)
 		if not fromDB:
 			LOGGER.info("getting track info")
-			res = Playlist.serverHttpRequest.post("api/modules/music/playlists/" + self.playerName, {
+			res = self.serverHttpRequest.post("api/modules/music/playlists/" + self.playerName, {
 				"track": {
-					"uri": track.uri,
+					"serviceId": track.serviceId,
 					"source": track.source
 				}
 			});
 			LOGGER.info("track = " + str(res))
 			track._id = res["track"]["_id"]
+			LOGGER.info("track._id = " + str(track._id))
+
+
+	def set(self, data, fromDb=False, startAtTrack=None):
+		self.clear(True)
+		params = dict();
+		params["source"] = data.source
+
+		if isinstance(data, Track):
+			LOGGER.info("sending request set to api/modules/music/playlists/" + self.playerName + "/set");
+			params["track"] = dict()
+			params["track"]["serviceId"] = data.serviceId
+		elif isinstance(data, Album):
+			LOGGER.info("sending request set to api/modules/music/playlists/" + self.playerName + "/set");
+			params["album"] = dict()
+			params["album"]["serviceId"] = data.serviceId
+		else:
+			LOGGER.info("unknown type of " + str(data.__class__))
+			return False
+		LOGGER.info("Parameters: " + str(params));
+		res = self.serverHttpRequest.post("api/modules/music/playlists/" + self.playerName + "/set", params);
+		LOGGER.info("Got playlist")
+		for track in res["playlist"]["tracks"]:
+			self.tracks.append(Track(data.source, track["uri"], track["serviceId"], track["_id"], track["name"], track));
+		if startAtTrack is not None:
+			self.setPlayingId(startAtTrack);
+		return True
 
 	def concat(self, trackset, fromDB=False):
 		req = []
@@ -46,7 +85,7 @@ class Playlist:
 			req.append({"uri": track.uri, "source": track.source})
 		if not fromDB:
 			LOGGER.info("getting track info " + str(req));
-			res = Playlist.serverHttpRequest.post("api/modules/music/playlists/" + self.playerName, {
+			res = self.serverHttpRequest.post("api/modules/music/playlists/" + self.playerName, {
 				"trackset": req
 			});
 			LOGGER.info("track = " + str(res))
@@ -54,6 +93,14 @@ class Playlist:
 				LOGGER.info("trackset = " + str(res["trackset"]))	
 				for i in range(len(res["trackset"])):
 					trackset[i]._id = res["trackset"][i]["_id"]
+
+	def setPlayingId(self, id):
+		counter = 0;
+		for track in self.tracks:
+			if track.serviceId == id:
+				self.current = counter
+				return
+			counter+=1;
 
 
 	def get(self, key=None):
@@ -71,12 +118,12 @@ class Playlist:
 			return None
 	def remove(self, key):
 		if key > 0 and len(self.tracks) > key:
-			res = Playlist.serverHttpRequest.delete("api/modules/music/playlists/" + self.playerName + "/" + self.tracks[key]._id);
+			res = self.serverHttpRequest.delete("api/modules/music/playlists/" + self.playerName + "/" + self.tracks[key]._id);
 			del self.tracks[key]
 	def removeById(self, _id):
 		for index in range(len(self.tracks)):
 			if self.tracks[index]._id == _id:
-				res = Playlist.serverHttpRequest.delete("api/modules/music/playlists/" + self.playerName + "/"  + self.tracks[index]._id);
+				res = self.serverHttpRequest.delete("api/modules/music/playlists/" + self.playerName + "/"  + self.tracks[index]._id);
 				del self.tracks[index]
 				LOGGER.info(str(res));
 				break;
@@ -99,7 +146,7 @@ class Playlist:
 	def clear(self, fromDb=False):
 		LOGGER.info("clear playlist")
 		if not fromDb:
-			res = Playlist.serverHttpRequest.get("api/modules/music/playlists/" + self.playerName + "/clear");
+			res = self.serverHttpRequest.get("api/modules/music/playlists/" + self.playerName + "/clear");
 			LOGGER.info(str(res));
 		self.tracks = [];
 		self.setCurrent(0);
@@ -111,5 +158,5 @@ class Playlist:
 			id = None
 			if currentTrack is not None:
 				id = currentTrack._id;
-			Playlist.rabbitConnection.emit("playlist:playing:id", {"raspberry": {"name": self.playerName}, "_id": id})
+			#Playlist.rabbitConnection.emit("playlist:playing:id", {"raspberry": {"name": self.playerName}, "_id": id})
 
