@@ -64,7 +64,7 @@ function run() {
             ip : utils.getIpAddr()["wlan0"],
             modules: {}
         }
-        app.middleware.socketConnection.connect(raspInfo,
+        app.middleware.socketConnection.connect(raspInfo, config.Server.url,
             function(token, reconnection) {
                 console.log("callback");
                 if (!reconnection) {

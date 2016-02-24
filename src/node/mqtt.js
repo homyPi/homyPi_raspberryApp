@@ -1,6 +1,8 @@
 var mqtt = require("mqtt");
 var Promise = require("bluebird");
 
+var URL = require("url");
+
 
 function MQTT(name, url, token) {
 	this.name = name;
@@ -8,7 +10,9 @@ function MQTT(name, url, token) {
 	this.wasConnected = false;
 	this.events = {};
 
-	this.client  = mqtt.connect('mqtt://localhost:3005', {
+    var objUrl = URL.parse(url);
+    var url = "tcp://" + objUrl.hostname + ":3005";
+	this.client  = mqtt.connect(url, {
 		reconnectPeriod: 5000
 	});
 	this.client.on('message', function (topic, message) {
