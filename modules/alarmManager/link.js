@@ -113,11 +113,11 @@ Link.setSocket = function() {
 	    }
 
     });
-	Link.app.middleware.socketConnection.socket.on("alarms:new", function(data) {
+	Link.app.middleware.socketConnection.socket.on("alarm:new", function(data) {
         console.log("new alarm");
         console.log(data);
 	    try {
-		    Link.pub.publish(route, JSON.stringify({message: "alarms:new", data: data}));
+		    Link.pub.publish(route, JSON.stringify({message: "alarm:new", data: data}));
 	    } catch(e) {
 		    console.log(e);
 	    }

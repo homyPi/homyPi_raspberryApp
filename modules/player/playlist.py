@@ -56,7 +56,12 @@ class Playlist:
 	def set(self, data, fromDb=False, startAtTrack=None):
 		self.clear(True)
 		params = dict();
-		params["source"] = data.source
+		if "source" in data:
+			params["source"] = data["source"]
+		elif hasattr(data, "source"):
+			params["source"] = data.source
+		else:
+			return False
 
 		if isinstance(data, Track):
 			LOGGER.info("sending request set to api/modules/music/playlists/" + self.playerName + "/set");
@@ -66,14 +71,17 @@ class Playlist:
 			LOGGER.info("sending request set to api/modules/music/playlists/" + self.playerName + "/set");
 			params["album"] = dict()
 			params["album"]["serviceId"] = data.serviceId
+		elif "playlist" in data:
+			params = data;
 		else:
 			LOGGER.info("unknown type of " + str(data.__class__))
 			return False
 		LOGGER.info("Parameters: " + str(params));
 		res = self.serverHttpRequest.post("api/modules/music/playlists/" + self.playerName + "/set", params);
 		LOGGER.info("Got playlist")
+		print str(res)
 		for track in res["playlist"]["tracks"]:
-			self.tracks.append(Track(data.source, track["uri"], track["serviceId"], track["_id"], track["name"], track));
+			self.tracks.append(Track(params["source"], track["uri"], track["serviceId"], track["_id"], track["name"], track));
 		if startAtTrack is not None:
 			self.setPlayingId(startAtTrack);
 		return True

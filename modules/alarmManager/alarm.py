@@ -52,27 +52,12 @@ class Alarm:
                     LOGGER.error("unable to start the alarm")
                 else:
                   playlist = [];
-                  if "playlist" in resp:
-                    for item in resp["playlist"]:
-                      if "track" in item:
-                        track = item["track"]
-                        if track is not None and "name" in track and "uri" in track:
-                          newItem = {"source": "spotify", "uri": track["uri"], "name": track["name"]}
-                          if "query" in item and "tempo" in item["query"]:
-                            newItem["tempo"] = item["query"]["tempo"];
-                          if "similarTo" in item:
-                            newItem["similarTo"] = item["similarTo"]
-                          LOGGER.info("track = " + str(newItem))
-                          playlist.append(newItem)
-                        else:
-                          LOGGER.info(str(track))
-                        print("===========")
-                    print("finnaly, got " + str(len(playlist)) + "  songs");
-                    Alarm.rabbitConnectionPlayer.emit('playListSet', {"trackset": playlist, "autoPlay": True})
-                    
+                  if "data" in resp:
+                    Alarm.rabbitConnectionPlayer.emit('playTrack', resp["data"])
+
                     history = {
                       "execution_date": str(datetime.datetime.now()),
-                      "executed_songs": playlist
+                      "executed_songs": resp["data"]["playlist"]
                     }
                     print("set history");
                     resp = Alarm.serverRequester.post('api/modules/alarms/' + self._id + '/history', {"history": history});
@@ -87,7 +72,8 @@ class Alarm:
                 #if not self.repeat:
                 #    self.enable = False
                 #    Alarm.serverRequester.emit('alarm:update', {"alarm": {"_id": self._id, "update": {"enable": False}}})
-             
+            else:
+              print ("Missing Alarm.serverRequester") 
           
           
       def schedule(self):

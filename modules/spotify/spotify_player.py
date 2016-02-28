@@ -21,9 +21,6 @@ class SpotifyPlayer():
     idPlaying = 0
     playlist = []
     doc_header = 'Commands'
-    prompt = 'spotify> '
-
-    logger = logging.getLogger('shell.commander')
 
     def __init__(self, appConfig,  onTrackEnd=None):
         username = appConfig.get('Spotify', 'username');
@@ -40,6 +37,7 @@ class SpotifyPlayer():
         self.logged_out = threading.Event()
         self.logged_out.set()
         LOGGER.info('Initializing player')
+        print str(spotify)
         sConfig = spotify.Config()
         print(expanduser("~") + '/spotify_appkey.key')
         sConfig.load_application_key_file(expanduser("~") + '/spotify_appkey.key');

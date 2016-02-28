@@ -29,6 +29,7 @@ function MQTT(name, url, token) {
 	}.bind(this));
 
 	this.on = function(event, callback) {
+		console.log("new callback for " + event);
 		if (!this.events[event])
 			this.events[event] = [];
 		this.events[event].push(callback);

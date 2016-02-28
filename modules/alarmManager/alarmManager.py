@@ -83,7 +83,7 @@ class AlarmManager:
     def setHandlers(self):
         LOGGER.info("set handlers")
         self.rabbitConnectionAlarm.addHandler("alarm:updated", Alarm.updateAlarmFromJSON)
-        self.rabbitConnectionAlarm.addHandler("alarms:new", Alarm.addAlarmsFromJSON)
+        self.rabbitConnectionAlarm.addHandler("alarm:new", Alarm.addAlarmsFromJSON)
         self.rabbitConnectionAlarm.addHandler("alarm:removed", Alarm.removeByData)
         self.rabbitConnectionAlarm.addHandler("reconnected", self.onSocketReconnect)
 

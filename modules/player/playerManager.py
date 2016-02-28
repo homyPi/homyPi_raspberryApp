@@ -45,11 +45,14 @@ class PlayerManager:
         LOGGER.info("=====================+++>" + str(Playlist.serverHttpRequest))
         self.modules = DynamicModule(playersConfig).load()
         #self.players = self.moduleLoader.load()
-        self.player = Player(self)
+        #name, modules, config, serverHttpRequest, serverMq):
         self.job = None;
         signal.signal(signal.SIGINT, self.stopApp)
         LOGGER.info("starting player module")
         self.server = ServerRequester("serverRequest.player")
+        
+        self.player = Player(self.name, self.modules, config, self.serverHttpRequest, self.server)
+        
         self.rabbitConnection = RabbitConsumer("module.player", "module.player")
         Playlist.rabbitConnection = self.server;
         try:
@@ -115,7 +118,8 @@ class PlayerManager:
                     success = self.player.playlist.set(Album(data["source"], data["album"]["uri"], data["album"]["serviceId"]), startAtTrack=data["startAtTrack"])
                 else:
                     success = self.player.playlist.set(Album(data["source"], data["album"]["uri"], data["album"]["serviceId"]))
-
+            elif "playlist" in data:
+                success = self.player.playlist.set(data);
             if success:
                 self.player.play();
 

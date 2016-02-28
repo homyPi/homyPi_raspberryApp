@@ -7,14 +7,14 @@ logging.basicConfig(filename='module.log',level=logging.INFO, format=LOG_FORMAT)
 from playlist import Playlist
 
 class Player:
-	def __init__(self, playerManager):
-		self.playerManager = playerManager
-		self.name = playerManager.name
+	def __init__(self, name, modules, config, serverHttpRequest, serverMq):
+		self.name = name
+		self.serverMq = serverMq;
 		self.playerModules = dict();
-		for moduleClass in playerManager.modules:
+		for moduleClass in modules:
 			print "loading player module " + moduleClass["moduleName"]
-			self.playerModules[moduleClass["moduleName"]] = moduleClass["class"](playerManager.config, self.next)
-		self.playlist = Playlist(playerManager.config.get("Server", "name"), playerManager.serverHttpRequest);
+			self.playerModules[moduleClass["moduleName"]] = moduleClass["class"](config, self.next)
+		self.playlist = Playlist(config.get("Server", "name"), serverHttpRequest);
 		self.currentPlayer = None;
 		self.job = None
 
@@ -37,12 +37,12 @@ class Player:
 			if self.currentPlayer.play(track) is False:
 				self.next();
 			else:
-				self.playerManager.server.emit("player:status", {'status':'PLAYING', "playingId": track._id, "track": track.jsonFull})
+				self.serverMq.emit("player:status", {'status':'PLAYING', "playingId": track._id, "track": track.jsonFull})
 				#self.setSendProgressJob()
 		else:
 			if self.job is not None:
 				self.job.remove()
-			self.playerManager.server.emit("player:status", {'status':"PAUSED"})
+			self.serverMq.emit("player:status", {'status':"PAUSED"})
 			LOGGER.info("playlist empty")
 
 
@@ -53,7 +53,7 @@ class Player:
 		else:
 			self.currentPlayer.resume()
 			LOGGER.info("emit 'player:status' => 'PLAYING'")
-			self.playerManager.server.emit("player:status", {'status':'PLAYING'})
+			self.serverMq.emit("player:status", {'status':'PLAYING'})
 			self.setSendProgressJob()
 
 
@@ -61,7 +61,7 @@ class Player:
 		self.currentPlayer.pause()
 		if self.job is not None:
 			self.job.remove()
-		self.playerManager.server.emit("player:status", {'status':"PAUSED"})
+		self.serverMq.emit("player:status", {'status':"PAUSED"})
 
 
 	def next(self):
