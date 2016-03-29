@@ -25,7 +25,7 @@ class Track:
 		self.name = name;
 		self.jsonFull = jsonFull;
 
-		
+
 
 class Playlist:
 	rabbitConnection = None;
@@ -56,7 +56,7 @@ class Playlist:
 	def set(self, data, fromDb=False, startAtTrack=None):
 		self.clear(True)
 		params = dict();
-		if "source" in data:
+		if isinstance(data, dict) and "source" in data:
 			params["source"] = data["source"]
 		elif hasattr(data, "source"):
 			params["source"] = data.source
@@ -98,7 +98,7 @@ class Playlist:
 			});
 			LOGGER.info("track = " + str(res))
 			if "trackset" in res:
-				LOGGER.info("trackset = " + str(res["trackset"]))	
+				LOGGER.info("trackset = " + str(res["trackset"]))
 				for i in range(len(res["trackset"])):
 					trackset[i]._id = res["trackset"][i]["_id"]
 
@@ -167,4 +167,3 @@ class Playlist:
 			if currentTrack is not None:
 				id = currentTrack._id;
 			#Playlist.rabbitConnection.emit("playlist:playing:id", {"raspberry": {"name": self.playerName}, "_id": id})
-

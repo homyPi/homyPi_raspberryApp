@@ -11,7 +11,7 @@ function MQTT(name, url, token) {
 	this.events = {};
 
     var objUrl = URL.parse(url);
-    var url = "tcp://" + objUrl.hostname + ":3005";
+    var url = "tcp://" + objUrl.hostname + ":3005/?clientId=" + token;
 	this.client  = mqtt.connect(url, {
 		reconnectPeriod: 5000
 	});
